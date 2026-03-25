@@ -1,0 +1,5 @@
+const DB_NAME = "RaithaReach", DB_VER = 8;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const db=e.target.result;["users","crops","jobs"].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s,{keyPath:"id"})})};r.onsuccess=e=>res(e.target.result);r.onerror=e=>rej(e)});}
+export async function dbGetAll(store){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(store,"readonly");const r=tx.objectStore(store).getAll();r.onsuccess=e=>res(e.target.result||[]);r.onerror=e=>rej(e)});}
+export async function dbPut(store,obj){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(store,"readwrite");tx.objectStore(store).put(obj);tx.oncomplete=()=>res(obj);tx.onerror=e=>rej(e)});}
+export async function dbDelete(store,id){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(store,"readwrite");tx.objectStore(store).delete(id);tx.oncomplete=()=>res();tx.onerror=e=>rej(e)});}

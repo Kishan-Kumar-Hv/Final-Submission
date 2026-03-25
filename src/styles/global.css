@@ -1,0 +1,63 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Brand */
+  --green:      #2d7a3a;
+  --green-l:    #38a047;
+  --green-pale: #e8f5eb;
+  --green-mid:  #c8e6cc;
+  --green-xp:   #f4faf5;
+
+  --gold:       #e8920a;
+  --gold-pale:  #fff4e0;
+
+  --red:        #d93025;
+  --red-pale:   #fdecea;
+
+  --blue:       #1967d2;
+  --blue-pale:  #e8f0fe;
+
+  /* Neutrals */
+  --white:      #ffffff;
+  --bg:         #f7f9f7;
+  --bg2:        #eef2ee;
+  --border:     #dde8de;
+  --border2:    #c4d9c6;
+
+  --text:       #1a2e1c;
+  --text2:      #3d5c40;
+  --text3:      #6b8f6e;
+  --text4:      #9ab89d;
+
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow:     0 2px 12px rgba(0,0,0,.09);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+
+  --r:    8px;
+  --r2:   12px;
+  --r3:   16px;
+  --r4:   24px;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --font-kn: 'Noto Sans Kannada', sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Animations */
+@keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+@keyframes slideR   { from { transform:translateX(110%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes ticker   { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+@keyframes pulse    { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+@keyframes spin     { to { transform:rotate(360deg); } }
+@keyframes popIn    { 0% { transform:scale(.92); opacity:0; } 100% { transform:scale(1); opacity:1; } }

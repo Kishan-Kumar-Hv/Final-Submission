@@ -1,0 +1,650 @@
+import { useEffect, useMemo, useState } from "react";
+
+const PROFILE_BY_CATEGORY = {
+  Vegetables: {
+    costShare: 0.57,
+    floorShare: 0.42,
+    overheadFloor: 4.2,
+    replantingWeight: 1.15,
+    breakdown: {
+      landPrepReplant: 0.18,
+      seedsNursery: 0.14,
+      cropCare: 0.21,
+      labourHarvest: 0.29,
+      sortingTransport: 0.18,
+    },
+  },
+  Fruits: {
+    costShare: 0.49,
+    floorShare: 0.38,
+    overheadFloor: 5.4,
+    replantingWeight: 0.75,
+    breakdown: {
+      landPrepReplant: 0.12,
+      seedsNursery: 0.1,
+      cropCare: 0.24,
+      labourHarvest: 0.34,
+      sortingTransport: 0.2,
+    },
+  },
+  Grains: {
+    costShare: 0.54,
+    floorShare: 0.43,
+    overheadFloor: 3.4,
+    replantingWeight: 1.05,
+    breakdown: {
+      landPrepReplant: 0.22,
+      seedsNursery: 0.16,
+      cropCare: 0.18,
+      labourHarvest: 0.24,
+      sortingTransport: 0.2,
+    },
+  },
+  Oilseeds: {
+    costShare: 0.56,
+    floorShare: 0.44,
+    overheadFloor: 4.1,
+    replantingWeight: 1.08,
+    breakdown: {
+      landPrepReplant: 0.19,
+      seedsNursery: 0.15,
+      cropCare: 0.2,
+      labourHarvest: 0.26,
+      sortingTransport: 0.2,
+    },
+  },
+  Spices: {
+    costShare: 0.58,
+    floorShare: 0.46,
+    overheadFloor: 6.2,
+    replantingWeight: 1.18,
+    breakdown: {
+      landPrepReplant: 0.17,
+      seedsNursery: 0.13,
+      cropCare: 0.24,
+      labourHarvest: 0.28,
+      sortingTransport: 0.18,
+    },
+  },
+  "Cash Crops": {
+    costShare: 0.53,
+    floorShare: 0.4,
+    overheadFloor: 3.2,
+    replantingWeight: 1.02,
+    breakdown: {
+      landPrepReplant: 0.2,
+      seedsNursery: 0.14,
+      cropCare: 0.19,
+      labourHarvest: 0.25,
+      sortingTransport: 0.22,
+    },
+  },
+  default: {
+    costShare: 0.55,
+    floorShare: 0.42,
+    overheadFloor: 4,
+    replantingWeight: 1,
+    breakdown: {
+      landPrepReplant: 0.18,
+      seedsNursery: 0.14,
+      cropCare: 0.2,
+      labourHarvest: 0.28,
+      sortingTransport: 0.2,
+    },
+  },
+};
+
+const BREAKDOWN_LABELS = {
+  landPrepReplant: "Land prep + replanting",
+  seedsNursery: "Seeds / nursery",
+  cropCare: "Fertilizer, water, crop care",
+  labourHarvest: "Labour + harvesting",
+  sortingTransport: "Sorting + transport",
+};
+
+const REGROWTH_PRESETS = [
+  {
+    key: "competitive",
+    label: "Competitive",
+    hint: "Quick sale and repeat harvest cycle",
+    multiplier: 0.95,
+  },
+  {
+    key: "market",
+    label: "Match APMC",
+    hint: "Stay near the live mandi reference",
+    multiplier: 1,
+  },
+  {
+    key: "premium",
+    label: "Premium",
+    hint: "For fresh quality or stronger demand",
+    multiplier: 1.07,
+  },
+];
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function round2(value) {
+  return Math.round(Number(value) * 100) / 100;
+}
+
+function average(list) {
+  if (!list?.length) return 0;
+  return list.reduce((sum, item) => sum + Number(item || 0), 0) / list.length;
+}
+
+function money(value) {
+  const num = Number(value || 0);
+  return `₹${num % 1 ? num.toFixed(1) : num}`;
+}
+
+function getDemandInsight(marketRate, apmcPrice) {
+  const livePrice = Number(marketRate?.price || apmcPrice || 0);
+  const baselinePrice = Number(marketRate?.bp || apmcPrice || livePrice || 1);
+  const prevPrice = Number(marketRate?.prev || baselinePrice || livePrice || 1);
+  const histAvg = Number(average(marketRate?.hist) || baselinePrice || livePrice || 1);
+
+  const vsBase = baselinePrice > 0 ? (livePrice - baselinePrice) / baselinePrice : 0;
+  const vsPrev = prevPrice > 0 ? (livePrice - prevPrice) / prevPrice : 0;
+  const vsHist = histAvg > 0 ? (livePrice - histAvg) / histAvg : 0;
+
+  const score = clamp(0.58 + vsBase * 1.15 + vsPrev * 0.65 + vsHist * 0.7, 0.25, 1.35);
+
+  let level = "Stable demand";
+  let pulse = "Steady today";
+  let profitTarget = 18;
+  let pricingLift = 0.02;
+  let tone = "#92400e";
+  let bg = "#fffbeb";
+  let border = "#fde68a";
+
+  if (score >= 0.95) {
+    level = "High demand";
+    profitTarget = 26;
+    pricingLift = 0.08;
+    tone = "#15803d";
+    bg = "#f0fdf4";
+    border = "#86efac";
+  } else if (score <= 0.5) {
+    level = "Soft demand";
+    profitTarget = 14;
+    pricingLift = -0.02;
+    tone = "#1d4ed8";
+    bg = "#eff6ff";
+    border = "#bfdbfe";
+  }
+
+  if (vsPrev >= 0.03) pulse = "Rising now";
+  if (vsPrev <= -0.03) pulse = "Cooling now";
+
+  return {
+    livePrice: round2(livePrice),
+    baselinePrice: round2(baselinePrice),
+    prevPrice: round2(prevPrice),
+    histAvg: round2(histAvg),
+    score: round2(score),
+    level,
+    pulse,
+    profitTarget,
+    pricingLift,
+    tone,
+    bg,
+    border,
+    vsBasePct: round2(vsBase * 100),
+    vsPrevPct: round2(vsPrev * 100),
+  };
+}
+
+function buildBreakdown(totalProductionCost, quantity, profile) {
+  const qty = Math.max(1, Number(quantity) || 1);
+  return Object.fromEntries(
+    Object.entries(profile.breakdown).map(([key, share]) => {
+      const total = round2(totalProductionCost * share);
+      return [
+        key,
+        {
+          total,
+          perKg: round2(total / qty),
+          sharePct: Math.round(share * 100),
+        },
+      ];
+    })
+  );
+}
+
+function getSingleHarvestEstimate({ quantity, category, marketRate, apmcPrice }) {
+  const qty = Math.max(1, Number(quantity) || 0);
+  const profile = PROFILE_BY_CATEGORY[category] || PROFILE_BY_CATEGORY.default;
+  const demand = getDemandInsight(marketRate, apmcPrice);
+  const referencePrice = Number(demand.livePrice || apmcPrice || 1);
+
+  const qtyFactor =
+    qty < 100 ? 1.12 :
+    qty < 250 ? 1.06 :
+    qty < 500 ? 1 :
+    qty < 1000 ? 0.95 : 0.91;
+
+  const handlingFloor = profile.overheadFloor + Math.min(3.5, 180 / qty);
+  const rawCostPerKg = Math.max(
+    referencePrice * profile.costShare * qtyFactor,
+    demand.baselinePrice * profile.floorShare,
+    handlingFloor
+  );
+  const replantingBuffer = 1 + profile.replantingWeight * 0.08 + (demand.level === "Soft demand" ? 0.03 : 0);
+
+  const costPerKg = round2(rawCostPerKg * replantingBuffer);
+  const totalProductionCost = round2(costPerKg * qty);
+  const costBreakdown = buildBreakdown(totalProductionCost, qty, profile);
+
+  const fairFloor = round2(costPerKg * (1 + demand.profitTarget / 100));
+  const demandAlignedFloor = round2(referencePrice * (1 + demand.pricingLift));
+  const minBid = Math.ceil(Math.max(fairFloor, demandAlignedFloor, costPerKg * 1.12));
+  const expectedPrice = Math.ceil(
+    Math.max(
+      minBid * 1.06,
+      costPerKg * 1.32,
+      referencePrice * (1 + Math.max(demand.pricingLift, 0.04))
+    )
+  );
+
+  return {
+    pricingMode: "auto_single_harvest",
+    costPerKg,
+    totalProductionCost,
+    minBid,
+    expectedPrice,
+    profitTarget: demand.profitTarget,
+    costBreakdown,
+    demandInsights: {
+      ...demand,
+      recommendedFloor: minBid,
+      targetClose: expectedPrice,
+      approxModel: "Auto-estimated from crop type, quantity and live market demand",
+    },
+  };
+}
+
+function getRegrowthGuidance(marketRate, apmcPrice) {
+  const demand = getDemandInsight(marketRate, apmcPrice);
+  const referencePrice = Number(demand.livePrice || apmcPrice || 0);
+
+  return {
+    demand,
+    referencePrice,
+    presets: REGROWTH_PRESETS.map(preset => ({
+      ...preset,
+      price: Math.max(1, Math.round(referencePrice * preset.multiplier)),
+    })),
+  };
+}
+
+function getTopBreakdownItems(costBreakdown) {
+  return Object.entries(costBreakdown || {})
+    .sort(([, a], [, b]) => b.total - a.total)
+    .slice(0, 3);
+}
+
+export function SmartPriceCalculator({
+  harvestType,
+  quantity,
+  category,
+  marketRate,
+  apmcPrice,
+  onResult,
+}) {
+  const [open, setOpen] = useState(false);
+
+  const singleHarvestEstimate = useMemo(() => {
+    if (harvestType !== "single_harvest" || !Number(quantity)) return null;
+    return getSingleHarvestEstimate({ quantity, category, marketRate, apmcPrice });
+  }, [harvestType, quantity, category, marketRate, apmcPrice]);
+
+  const regrowthGuidance = useMemo(() => {
+    if (harvestType !== "regrows") return null;
+    return getRegrowthGuidance(marketRate, apmcPrice);
+  }, [harvestType, marketRate, apmcPrice]);
+
+  useEffect(() => {
+    if (harvestType) setOpen(true);
+  }, [harvestType]);
+
+  function applyRegrowthPrice(price, preset) {
+    onResult({
+      pricingMode: "manual_regrows",
+      minBid: price,
+      expectedPrice: 0,
+      costPerKg: 0,
+      totalProductionCost: 0,
+      profitTarget: 0,
+      costBreakdown: null,
+      demandInsights: regrowthGuidance
+        ? {
+            ...regrowthGuidance.demand,
+            approxModel: `Manual market guidance for regrowing crop (${preset.label.toLowerCase()})`,
+          }
+        : null,
+    });
+    setOpen(false);
+  }
+
+  function applySingleHarvestPrice() {
+    if (!singleHarvestEstimate) return;
+    onResult(singleHarvestEstimate);
+    setOpen(false);
+  }
+
+  const headerText =
+    harvestType === "single_harvest"
+      ? singleHarvestEstimate
+        ? `Auto cost ${money(singleHarvestEstimate.costPerKg)}/kg · Safe floor ${money(singleHarvestEstimate.minBid)}/kg`
+        : "Enter crop and quantity to auto-estimate safe pricing"
+      : harvestType === "regrows"
+        ? regrowthGuidance?.referencePrice
+          ? `Manual price mode around live market ${money(regrowthGuidance.referencePrice)}/kg`
+          : "Set your own price using live market guidance"
+        : "Choose a harvest type first";
+
+  return (
+    <div style={{ background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)", border: "1.5px solid #86efac", borderRadius: 14, overflow: "hidden" }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{ padding: "13px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: "#16a34a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>
+            {harvestType === "single_harvest" ? "🧠" : "📊"}
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 13, color: "#15803d" }}>
+              {harvestType === "single_harvest" ? "Auto Effort Pricing" : "Manual Market Guidance"}
+            </div>
+            <div style={{ fontSize: 11, color: "#4b7a4e", marginTop: 1 }}>{headerText}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {harvestType === "single_harvest" && singleHarvestEstimate && (
+            <span style={{ fontSize: 11, fontWeight: 800, background: "#16a34a", color: "#fff", padding: "2px 9px", borderRadius: 10 }}>
+              {money(singleHarvestEstimate.minBid)}/kg safe
+            </span>
+          )}
+          <span style={{ fontSize: 16, color: "#16a34a", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform .2s" }}>▼</span>
+        </div>
+      </div>
+
+      {open && (
+        <div style={{ padding: "0 16px 18px", borderTop: "1px solid #bbf7d0" }}>
+          {!harvestType && (
+            <div style={{ padding: "16px 0 2px", fontSize: 13, color: "#4b7a4e", lineHeight: 1.55 }}>
+              Select a harvest type first. Regrowing crops stay in manual pricing mode, while single-harvest crops get automatic effort-cost estimation.
+            </div>
+          )}
+
+          {harvestType === "regrows" && regrowthGuidance && (
+            <div style={{ paddingTop: 14 }}>
+              <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 7 }}>
+                  Regrowing Crop Mode
+                </div>
+                <div style={{ fontSize: 13, color: "#1a2e1c", lineHeight: 1.55 }}>
+                  Since this crop can bear again from the same plant, the app does not add replanting cost. The farmer sets the minimum bid directly, and we only show live market guidance.
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
+                <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>Live market</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#15803d", marginTop: 5 }}>{money(regrowthGuidance.referencePrice)}</div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>per kg reference</div>
+                </div>
+                <div style={{ background: regrowthGuidance.demand.bg, border: `1px solid ${regrowthGuidance.demand.border}`, borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: regrowthGuidance.demand.tone, textTransform: "uppercase", letterSpacing: 0.5 }}>Demand</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: regrowthGuidance.demand.tone, marginTop: 6 }}>{regrowthGuidance.demand.level}</div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{regrowthGuidance.demand.pulse}</div>
+                </div>
+                <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>Baseline shift</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: regrowthGuidance.demand.vsBasePct >= 0 ? "#15803d" : "#dc2626", marginTop: 5 }}>
+                    {regrowthGuidance.demand.vsBasePct >= 0 ? "+" : ""}{regrowthGuidance.demand.vsBasePct}%
+                  </div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>vs base market price</div>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                {regrowthGuidance.presets.map(preset => (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    onClick={() => applyRegrowthPrice(preset.price, preset)}
+                    style={{ background: "#fff", border: "1.5px solid #86efac", borderRadius: 12, padding: "14px 12px", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}
+                  >
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>{preset.label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "#1a2e1c", margin: "6px 0 5px" }}>{money(preset.price)}/kg</div>
+                    <div style={{ fontSize: 11, color: "#4b7a4e", lineHeight: 1.45 }}>{preset.hint}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {harvestType === "single_harvest" && (
+            <div style={{ paddingTop: 14 }}>
+              {!singleHarvestEstimate && (
+                <div style={{ fontSize: 13, color: "#4b7a4e", lineHeight: 1.55 }}>
+                  Enter the crop quantity to generate the automatic effort-cost model.
+                </div>
+              )}
+
+              {singleHarvestEstimate && (
+                <>
+                  <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 7 }}>
+                      Single Harvest Auto Model
+                    </div>
+                    <div style={{ fontSize: 13, color: "#1a2e1c", lineHeight: 1.55 }}>
+                      This crop needs replanting for the next cycle, so the farmer does not enter costs manually. The app estimates effort cost from crop type, quantity and live market demand, then calculates a safe profitable floor price.
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
+                    <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Effort cost</div>
+                      <div style={{ fontSize: 21, fontWeight: 800, color: "#dc2626", marginTop: 5 }}>{money(singleHarvestEstimate.costPerKg)}</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>per kg</div>
+                    </div>
+                    <div style={{ background: singleHarvestEstimate.demandInsights.bg, border: `1px solid ${singleHarvestEstimate.demandInsights.border}`, borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: singleHarvestEstimate.demandInsights.tone, textTransform: "uppercase", letterSpacing: 0.5 }}>Demand</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: singleHarvestEstimate.demandInsights.tone, marginTop: 6 }}>{singleHarvestEstimate.demandInsights.level}</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{singleHarvestEstimate.demandInsights.pulse}</div>
+                    </div>
+                    <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Safe floor</div>
+                      <div style={{ fontSize: 21, fontWeight: 800, color: "#15803d", marginTop: 5 }}>{money(singleHarvestEstimate.minBid)}</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>No-loss profitable bid</div>
+                    </div>
+                    <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Expected close</div>
+                      <div style={{ fontSize: 21, fontWeight: 800, color: "#d97706", marginTop: 5 }}>{money(singleHarvestEstimate.expectedPrice)}</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>Healthy target price</div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>Approximate effort breakdown</div>
+                      <div style={{ fontSize: 11, color: "#4b7a4e" }}>
+                        Total season effort: <strong>{money(singleHarvestEstimate.totalProductionCost)}</strong>
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      {Object.entries(singleHarvestEstimate.costBreakdown).map(([key, item]) => (
+                        <div key={key} style={{ background: "#f8fffb", border: "1px solid #dcfce7", borderRadius: 10, padding: "10px 12px" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#1a2e1c" }}>{BREAKDOWN_LABELS[key]}</div>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: "#15803d", marginTop: 4 }}>{money(item.perKg)}/kg</div>
+                          <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{money(item.total)} total · {item.sharePct}% share</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={applySingleHarvestPrice}
+                    style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: "#16a34a", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    Apply safe floor {money(singleHarvestEstimate.minBid)}/kg and save retailer transparency
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function BidInsight({ bidAmount, crop, role }) {
+  if (!crop.costPerKg || crop.costPerKg === 0) return null;
+
+  const costPkg = Number(crop.costPerKg);
+  const apmcPrice = Number(crop.basePrice) || 0;
+  const safeFloor = Number(crop.demandInsights?.recommendedFloor || crop.minBid || 0);
+  const targetClose = Number(crop.demandInsights?.targetClose || crop.expectedPrice || 0);
+  const profitAmt = bidAmount - costPkg;
+  const profitPct = (profitAmt / costPkg) * 100;
+  const gapToSafe = bidAmount - safeFloor;
+  const vsApmc = apmcPrice > 0 ? ((bidAmount - apmcPrice) / apmcPrice) * 100 : null;
+
+  let color = "#15803d";
+  let bg = "#f0fdf4";
+  let border = "#86efac";
+  let icon = "🟢";
+  let msg = `${profitPct.toFixed(0)}% profit - great deal for farmer`;
+
+  if (profitPct < 25) {
+    color = "#92400e";
+    bg = "#fffbeb";
+    border = "#fde68a";
+    icon = "🟡";
+    msg = `${profitPct.toFixed(0)}% profit - fair but not strong`;
+  }
+  if (profitPct < 10) {
+    color = "#c2410c";
+    bg = "#fff7ed";
+    border = "#fed7aa";
+    icon = "🟠";
+    msg = "Close to cost price - little safety for farmer";
+  }
+  if (profitPct < 0) {
+    color = "#dc2626";
+    bg = "#fef2f2";
+    border = "#fca5a5";
+    icon = "🔴";
+    msg = `Below effort cost by ${money(Math.abs(profitAmt))}/kg`;
+  }
+
+  if (role === "retailer") {
+    return (
+      <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 14px", marginTop: 8 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 7 }}>
+          {icon} Farmer effort transparency
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>Cost/kg</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626" }}>{money(costPkg)}</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>Safe floor</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#15803d" }}>{money(safeFloor)}</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>Target close</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#d97706" }}>{money(targetClose || safeFloor)}</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>This bid</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color }}>{money(bidAmount)}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: "#4b7a4e", marginTop: 8, lineHeight: 1.5 }}>
+          {gapToSafe >= 0 ? `This bid is ${money(gapToSafe)} above the safe floor.` : `This bid is ${money(Math.abs(gapToSafe))} below the safe floor.`}
+          {crop.demandInsights?.level ? ` Demand right now: ${crop.demandInsights.level}.` : ""}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: 10, padding: "9px 13px", display: "flex", alignItems: "center", gap: 10 }}>
+      <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color }}>{msg}</div>
+        <div style={{ fontSize: 11, color: "#6b8f6e", marginTop: 2 }}>
+          {gapToSafe >= 0 ? `Above safe floor by ${money(gapToSafe)}` : `Below safe floor by ${money(Math.abs(gapToSafe))}`}
+          {vsApmc !== null ? ` · ${vsApmc >= 0 ? "+" : ""}${vsApmc.toFixed(0)}% vs APMC` : ""}
+        </div>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color }}>{profitAmt >= 0 ? "+" : "-"}{money(Math.abs(profitAmt))}</div>
+        <div style={{ fontSize: 9, color: "#6b7280" }}>per kg margin</div>
+      </div>
+    </div>
+  );
+}
+
+export function CostBadge({ crop }) {
+  if (!crop.costPerKg) return null;
+
+  const costPkg = Number(crop.costPerKg);
+  const safeFloor = Number(crop.demandInsights?.recommendedFloor || crop.minBid || 0);
+  const targetClose = Number(crop.demandInsights?.targetClose || crop.expectedPrice || 0);
+  const minProfit = ((safeFloor - costPkg) / costPkg) * 100;
+  const topItems = getTopBreakdownItems(crop.costBreakdown);
+
+  return (
+    <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 9, padding: "8px 11px", marginBottom: 8 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+        🧠 Auto effort model for retailer
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>Cost/kg</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626" }}>{money(costPkg)}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>Safe floor</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#15803d" }}>{money(safeFloor)}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>Demand</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: crop.demandInsights?.tone || "#1a2e1c" }}>{crop.demandInsights?.level || "Live"}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>Target close</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#d97706" }}>{money(targetClose || safeFloor)}</div>
+        </div>
+      </div>
+
+      {topItems.length > 0 && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+          {topItems.map(([key, item]) => (
+            <span key={key} style={{ background: "#fff", border: "1px solid #dcfce7", borderRadius: 999, padding: "3px 8px", fontSize: 10, color: "#4b7a4e" }}>
+              {BREAKDOWN_LABELS[key]} {money(item.perKg)}/kg
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div style={{ fontSize: 10, color: "#4b7a4e", marginTop: 7, lineHeight: 1.5 }}>
+        Safe floor protects roughly {minProfit.toFixed(0)}% margin above estimated effort cost.
+        {crop.demandInsights?.approxModel ? ` ${crop.demandInsights.approxModel}.` : ""}
+      </div>
+    </div>
+  );
+}
