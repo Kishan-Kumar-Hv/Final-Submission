@@ -7,6 +7,8 @@ import { DEMO_USERS } from "../data/constants.js";
 import { pick } from "../i18n.js";
 
 const RESET_MARKER = "rr-fresh-start-v2";
+const LOCAL_OTP_PREFIX = "rr-local-otp:";
+const LOCAL_OTP_TTL_MS = 5 * 60 * 1000;
 
 export default function AuthPage({ onLogin, toast, lang }) {
   const authImage = "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1400&q=80";
@@ -67,6 +69,46 @@ export default function AuthPage({ onLogin, toast, lang }) {
     return value.replace(/\D/g, "").slice(-10);
   }
 
+  function buildLocalOtpKey(phone, purpose) {
+    return `${LOCAL_OTP_PREFIX}${normalizePhone(phone)}:${purpose || "login"}`;
+  }
+
+  function saveLocalOtp(phone, purpose, code) {
+    try {
+      sessionStorage.setItem(
+        buildLocalOtpKey(phone, purpose),
+        JSON.stringify({
+          code,
+          expiresAt: Date.now() + LOCAL_OTP_TTL_MS,
+        })
+      );
+    } catch (_) {}
+  }
+
+  function verifyLocalOtp(phone, purpose, otp) {
+    try {
+      const raw = sessionStorage.getItem(buildLocalOtpKey(phone, purpose));
+      if (!raw) {
+        return { ok: false, error: "OTP expired or not found. Please request a new OTP." };
+      }
+
+      const session = JSON.parse(raw);
+      if (Date.now() > Number(session?.expiresAt || 0)) {
+        sessionStorage.removeItem(buildLocalOtpKey(phone, purpose));
+        return { ok: false, error: "OTP expired. Please request a new OTP." };
+      }
+
+      if (String(session?.code || "").trim() !== String(otp || "").trim()) {
+        return { ok: false, error: "Invalid OTP. Please try again." };
+      }
+
+      sessionStorage.removeItem(buildLocalOtpKey(phone, purpose));
+      return { ok: true };
+    } catch (_) {
+      return { ok: false, error: "Could not verify OTP." };
+    }
+  }
+
   function h(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   }
@@ -100,7 +142,15 @@ export default function AuthPage({ onLogin, toast, lang }) {
       }
       return data;
     } catch (error) {
-      return { ok: false, mode: "error", error: error.message || "Could not send OTP." };
+      const mockCode = String(Math.floor(100000 + Math.random() * 900000));
+      saveLocalOtp(phone, purpose, mockCode);
+      return {
+        ok: true,
+        mode: "local",
+        provider: "browser",
+        mockCode,
+        error: error.message || "Could not send OTP.",
+      };
     }
   }
 
@@ -121,7 +171,8 @@ export default function AuthPage({ onLogin, toast, lang }) {
       }
       return data;
     } catch (error) {
-      return { ok: false, error: error.message || "Could not verify OTP." };
+      const localResult = verifyLocalOtp(phone, purpose, otp);
+      return localResult.ok ? localResult : { ok: false, error: error.message || localResult.error || "Could not verify OTP." };
     }
   }
 
@@ -149,7 +200,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
       throw new Error(result?.error || "Could not send OTP right now.");
     }
 
-    const deliveryMode = result?.mode === "live" ? "live" : "mock";
+    const deliveryMode = result?.mode === "live" ? "live" : result?.mode === "local" ? "local" : "mock";
 
     clearOtpTimer();
     setOtpMeta({ ...meta, deliveryMode, provider: result?.provider || "mock" });
@@ -157,7 +208,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
     toast({
       msg: deliveryMode === "live"
         ? pick(lang, `📲 OTP sent to ${meta.phone}. Enter the code from SMS.`, `📲 OTP ಅನ್ನು ${meta.phone} ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ. SMS ನಲ್ಲಿರುವ ಕೋಡ್ ನಮೂದಿಸಿ.`)
-        : pick(lang, `📲 OTP sent to ${meta.phone}. It will auto-fill for demo.`, `📲 OTP ಅನ್ನು ${meta.phone} ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ. ಡೆಮೋಗಾಗಿ ಅದು ಸ್ವಯಂ ತುಂಬುತ್ತದೆ.`),
+        : deliveryMode === "local"
+          ? pick(lang, `📲 Demo OTP created locally for ${meta.phone}. It will auto-fill here.`, `📲 ${meta.phone} ಗೆ ಡೆಮೊ OTP ಸ್ಥಳೀಯವಾಗಿ ರಚಿಸಲಾಗಿದೆ. ಅದು ಇಲ್ಲಿ ಸ್ವಯಂ ತುಂಬುತ್ತದೆ.`)
+          : pick(lang, `📲 OTP sent to ${meta.phone}. It will auto-fill for demo.`, `📲 OTP ಅನ್ನು ${meta.phone} ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ. ಡೆಮೋಗಾಗಿ ಅದು ಸ್ವಯಂ ತುಂಬುತ್ತದೆ.`),
       icon: "📲",
     });
 
@@ -182,7 +235,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
     }
 
     try {
-      const verification = await verifyOtp(otpMeta.phone, otpCode.trim(), otpMeta.mode);
+      const verification = otpMeta.deliveryMode === "local"
+        ? verifyLocalOtp(otpMeta.phone, otpMeta.mode, otpCode.trim())
+        : await verifyOtp(otpMeta.phone, otpCode.trim(), otpMeta.mode);
       if (!verification?.ok) {
         throw new Error(verification?.error || pick(lang, "Please enter the correct 6-digit OTP.", "ದಯವಿಟ್ಟು ಸರಿಯಾದ 6 ಅಂಕೆಯ OTP ನಮೂದಿಸಿ."));
       }

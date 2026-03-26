@@ -322,7 +322,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel, lang = "en
       const message = String(error?.message || "");
       setScanErr(
         message.includes("fetch")
-          ? "Crop scan needs the local API server running. Start the app with npm run dev and try again."
+          ? "Crop scan needs a backend API. On a Vercel static deploy, enter the crop manually or connect a separate backend."
           : message
       );
     } finally {
