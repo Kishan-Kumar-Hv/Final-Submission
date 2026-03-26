@@ -67,7 +67,7 @@ export default function CropCard({ crop, rates, children, role, lang = "en" }) {
         {role==="farmer" && <FarmerProfitHint crop={crop} marketRate={mkt} lang={lang} />}
 
         {/* Stats grid */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        <div className="rr-grid-2-responsive" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           {[
             [pick(lang,"Quantity","ಪ್ರಮಾಣ"),`${crop.quantity} ${pick(lang,"kg","ಕೆಜಿ")}`],
             [pick(lang,"Min Bid","ಕನಿಷ್ಠ ಬಿಡ್"),`${fmtP(crop.minBid)}/${pick(lang,"kg","ಕೆಜಿ")}`,"var(--gold)"],

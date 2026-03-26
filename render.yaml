@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: raitha-reach-api
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm run server
+    disk:
+      name: raitha-reach-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: ./data/raitha-reach.sqlite
+      - key: SMS_ENABLED
+        value: "false"
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: MSG91_AUTH_KEY
+        sync: false
+      - key: MSG91_OTP_TEMPLATE_ID
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+      - key: TWILIO_MESSAGING_SERVICE_SID
+        sync: false
+
+  - type: web
+    name: raitha-reach-web
+    runtime: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_APP_NAME
+        value: Raitha Reach
+      - key: VITE_DEFAULT_LANG
+        value: en
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: raitha-reach-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_OPENWEATHER_API_KEY
+        sync: false

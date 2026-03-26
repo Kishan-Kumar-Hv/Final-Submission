@@ -291,6 +291,7 @@ export default function AboutPage({ setPage, lang }) {
             </div>
 
             <div
+              className="rr-grid-split-responsive"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1.35fr 1fr",

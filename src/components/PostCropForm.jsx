@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { KA_LOCS, findMatchingCrop, guessHarvestTypeForCrop, inferCropMeta } from "../data/constants.js";
 import { uid, fmtP } from "../utils/helpers.js";
+import { API_BASE } from "../utils/apiBase.js";
 import { dbPut } from "../db/indexedDB.js";
 import { getSingleHarvestEstimate, SmartPriceCalculator } from "./SmartPriceCalculator.jsx";
-
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 const HARVEST_TYPE_OPTIONS = [
   {
@@ -524,7 +523,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel, lang = "en
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: 0.5, display: "block", marginBottom: 6 }}>
                   Crop Name *
@@ -543,7 +542,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel, lang = "en
               <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: 0.5, display: "block", marginBottom: 8 }}>
                 Harvest Type *
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 {HARVEST_TYPE_OPTIONS.map(option => (
                   <button
                     key={option.value}
@@ -561,7 +560,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel, lang = "en
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <div className="rr-grid-3-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: 0.5, display: "block", marginBottom: 6 }}>
                   APMC Rate (₹/kg)

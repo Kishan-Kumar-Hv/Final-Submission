@@ -74,7 +74,7 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup,
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+              <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
                 <DispatchStat label={pick(lang, "Open Routes", "ತೆರೆದ ಮಾರ್ಗಗಳು")} value={available.length} sub={pick(lang, "Ready for immediate claim", "ತಕ್ಷಣ ಸ್ವೀಕರಿಸಲು ಸಿದ್ಧ")} tone="#41546f" bg="#f5f7fb" />
                 <DispatchStat label={pick(lang, "Payout Ready", "ಲಭ್ಯ ಪಾವತಿ")} value={payoutReady ? fmtP(payoutReady) : "₹0"} sub={pick(lang, `Avg ${avgPayout} per route`, `ಪ್ರತಿ ಮಾರ್ಗಕ್ಕೆ ಸರಾಸರಿ ${avgPayout}`)} tone="#7b5c23" bg="#fff8eb" border="#eadcc1" />
                 <DispatchStat label={pick(lang, "Live Now", "ಸಕ್ರಿಯ ಮಾರ್ಗಗಳು")} value={active.length} sub={pick(lang, avgRouteKm, avgRouteKm)} tone="#305c92" bg="#eef5ff" border="#d7e6ff" />
@@ -189,7 +189,7 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup,
                 <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", marginTop: 6 }}>✅ {pick(lang, "Completed Deliveries", "ಪೂರ್ಣಗೊಂಡ ವಿತರಣೆಗಳು")}</h1>
                 <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>{pick(lang, "Finished routes stay here as your clean delivery record and payout history.", "ಪೂರ್ಣಗೊಂಡ ಮಾರ್ಗಗಳು ಇಲ್ಲಿ ನಿಮ್ಮ ವಿತರಣಾ ದಾಖಲೆ ಮತ್ತು ಪಾವತಿ ಇತಿಹಾಸವಾಗಿ ಉಳಿಯುತ್ತವೆ.")}</div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(140px, 1fr))", gap: 10 }}>
+              <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(140px, 1fr))", gap: 10 }}>
                 <DispatchStat label={pick(lang, "Completed", "ಪೂರ್ಣಗೊಂಡಿವೆ")} value={done.length} tone="var(--green)" bg="#fff" border="#dce5b5" />
                 <DispatchStat label={pick(lang, "Payout Earned", "ಪಾವತಿ ಗಳಿಕೆ")} value={payoutEarned ? fmtP(payoutEarned) : "₹0"} tone="#7b5c23" bg="#fff" border="#eadcc1" />
               </div>

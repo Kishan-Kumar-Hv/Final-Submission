@@ -14,6 +14,7 @@ import { Toasts, ActivityPanel } from "./components/UI.jsx";
 import { useMarketRates }  from "./hooks/useMarketRates.js";
 import { useToast }        from "./hooks/useToast.js";
 import { dbGetAll, dbPut, dbDelete } from "./db/indexedDB.js";
+import { API_BASE } from "./utils/apiBase.js";
 import { uid, timeAgo, fmtP } from "./utils/helpers.js";
 import { pick, tCrop, tStatus, tVillage } from "./i18n.js";
 import { KA_LOCS } from "./data/constants.js";
@@ -27,7 +28,6 @@ import { KA_LOCS } from "./data/constants.js";
 const channel = new BroadcastChannel("rr-sync");
 const APP_TITLE = import.meta.env.VITE_APP_NAME || "Raitha Reach";
 const DEFAULT_LANG = import.meta.env.VITE_DEFAULT_LANG === "kn" ? "kn" : "en";
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 function generatePickupOtp() {
   return String(Math.floor(1000 + Math.random() * 9000));

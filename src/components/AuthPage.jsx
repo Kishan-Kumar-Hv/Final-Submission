@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { uid } from "../utils/helpers.js";
+import { API_BASE } from "../utils/apiBase.js";
 import { dbClear, dbGetAll, dbPut } from "../db/indexedDB.js";
 import { DEMO_USERS } from "../data/constants.js";
 import { pick } from "../i18n.js";
 
 const RESET_MARKER = "rr-fresh-start-v2";
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 export default function AuthPage({ onLogin, toast, lang }) {
   const authImage = "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1400&q=80";

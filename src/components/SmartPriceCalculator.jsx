@@ -521,7 +521,7 @@ export function SmartPriceCalculator({
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
+              <div className="rr-grid-3-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
                 <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Live market", "ಲೈವ್ ಮಾರುಕಟ್ಟೆ")}</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "#15803d", marginTop: 5 }}>{money(regrowthGuidance.referencePrice)}</div>
@@ -545,7 +545,7 @@ export function SmartPriceCalculator({
                 {pick(lang, "Approx recurring farm cost for profit tracking", "ಲಾಭದ ದಾಖಲೆಗೆ ಅಂದಾಜು ಮರುಕಳಿಸುವ ಕೃಷಿ ವೆಚ್ಚ")}: <strong>{money(regrowthGuidance.estimatedCostPerKg)}/{pick(lang, "kg", "ಕೆಜಿ")}</strong>. {pick(lang, "This keeps seed and full replanting cost out, but still counts labour, crop care and harvest effort.", "ಇದು ಬೀಜ ಮತ್ತು ಸಂಪೂರ್ಣ ಮರು ನೆಡುವ ವೆಚ್ಚವನ್ನು ಹೊರಗಿಡುತ್ತದೆ, ಆದರೆ ಕಾರ್ಮಿಕ, ಬೆಳೆ ಆರೈಕೆ ಮತ್ತು ಕೊಯ್ಲಿನ ಶ್ರಮವನ್ನು ಲೆಕ್ಕಿಸುತ್ತದೆ.")}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              <div className="rr-grid-3-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                 {regrowthGuidance.presets.map(preset => (
                   <button
                     key={preset.key}
@@ -581,7 +581,7 @@ export function SmartPriceCalculator({
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
+                  <div className="rr-grid-4-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
                     <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Effort cost", "ಶ್ರಮ ವೆಚ್ಚ")}</div>
                       <div style={{ fontSize: 21, fontWeight: 800, color: "#dc2626", marginTop: 5 }}>{money(singleHarvestEstimate.costPerKg)}</div>
@@ -611,7 +611,7 @@ export function SmartPriceCalculator({
                         {pick(lang, "Total season effort", "ಒಟ್ಟು ಹಂಗಾಮಿನ ಶ್ರಮ")}: <strong>{money(singleHarvestEstimate.totalProductionCost)}</strong>
                       </div>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       {Object.entries(singleHarvestEstimate.costBreakdown).map(([key, item]) => (
                         <div key={key} style={{ background: "#f8fffb", border: "1px solid #dcfce7", borderRadius: 10, padding: "10px 12px" }}>
                           <div style={{ fontSize: 11, fontWeight: 700, color: "#1a2e1c" }}>{tBreakdownLabel(BREAKDOWN_LABELS[key], lang)}</div>
@@ -685,7 +685,7 @@ export function BidInsight({ bidAmount, crop, role, lang = "en" }) {
         <div style={{ fontSize: 11, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 7 }}>
           {icon} {pick(lang, "Farmer effort transparency", "ರೈತರ ಶ್ರಮ ಪಾರದರ್ಶಕತೆ")}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        <div className="rr-grid-4-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>{pick(lang, "Cost/kg", "ವೆಚ್ಚ/ಕೆಜಿ")}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626" }}>{money(costPkg)}</div>
@@ -744,7 +744,7 @@ export function CostBadge({ crop, lang = "en" }) {
         🧠 {pick(lang, "Auto effort model for wholesaler", "ಸಗಟುಗಾಗಿ ಸ್ವಯಂ ಶ್ರಮ ಮಾದರಿ")}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+      <div className="rr-grid-4-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
         <div>
           <div style={{ fontSize: 9, color: "#6b7280" }}>{pick(lang, "Cost/kg", "ವೆಚ್ಚ/ಕೆಜಿ")}</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626" }}>{money(costPkg)}</div>

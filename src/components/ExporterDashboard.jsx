@@ -510,7 +510,7 @@ export default function ExporterDashboard({
                     <option key={market} value={market}>{market}</option>
                   ))}
                 </select>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
                   <input
                     type="number"
                     value={listingDraft.quantity}
@@ -857,7 +857,7 @@ export default function ExporterDashboard({
                     <option key={market} value={market}>{market}</option>
                   ))}
                 </select>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
                   <input
                     type="number"
                     value={requestDraft.quantity}

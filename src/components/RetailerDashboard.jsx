@@ -242,7 +242,7 @@ export default function RetailerDashboard({
                 <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 10, lineHeight: 1.65 }}>{pick(lang, "Use this board to scan farm offers quickly, compare live values, and place quantity-based wholesale bids with your shop name.", "ಈ ಫಲಕವನ್ನು ಬಳಸಿ ಫಾರ್ಮ್ ಲಿಸ್ಟಿಂಗ್‌ಗಳನ್ನು ಬೇಗ ಪರಿಶೀಲಿಸಿ, ನೈಜ ಮೌಲ್ಯಗಳನ್ನು ಹೋಲಿಸಿ ಮತ್ತು ನಿಮ್ಮ ಅಂಗಡಿ ಹೆಸರಿನೊಂದಿಗೆ ಪ್ರಮಾಣ ಆಧಾರಿತ ಸಗಟು ಬಿಡ್ ಮಾಡಿ.")}</p>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 12 }}>
+              <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 12 }}>
                 <div style={{ background: "#fff", border: "1px solid #eadcc1", borderRadius: 18, padding: "14px 16px" }}>
                   <div style={{ fontSize: 10, fontWeight: 800, color: "var(--text4)", textTransform: "uppercase", letterSpacing: .55 }}>{pick(lang, "Visible Listings", "ಗೋಚರ ಲಿಸ್ಟಿಂಗ್‌ಗಳು")}</div>
                   <div style={{ fontSize: 28, fontWeight: 800, color: "#9a5523", marginTop: 8 }}>{filtered.length}</div>
@@ -410,7 +410,7 @@ export default function RetailerDashboard({
               <StatCard icon="💰" label={pick(lang, "Open Need Value", "ತೆರೆದ ಬೇಡಿಕೆಯ ಮೌಲ್ಯ")} value={openNeedValue ? fmtP(openNeedValue) : "₹0"} color="var(--green)" />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 360px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
+            <div className="rr-grid-split-responsive" style={{ display: "grid", gridTemplateColumns: "minmax(300px, 360px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
               <div style={{ background: "#fff", border: "1px solid #e7deca", borderRadius: 18, padding: 18, boxShadow: "var(--shadow-sm)" }}>
                 <div style={{ fontSize: 10, fontWeight: 800, color: "#9a5523", textTransform: "uppercase", letterSpacing: .6 }}>
                   {pick(lang, "Post A Need", "ಬೇಡಿಕೆಯನ್ನು ಪೋಸ್ಟ್ ಮಾಡಿ")}
@@ -447,7 +447,7 @@ export default function RetailerDashboard({
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10 }}>
+                  <div className="rr-grid-2-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10 }}>
                     <div>
                       <label style={{ fontSize: 10, fontWeight: 800, color: "var(--text4)", textTransform: "uppercase", letterSpacing: .55, display: "block", marginBottom: 5 }}>
                         {pick(lang, "Required Qty (kg)", "ಬೇಕಾದ ಪ್ರಮಾಣ (ಕೆಜಿ)")}

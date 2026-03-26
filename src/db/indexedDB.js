@@ -1,7 +1,8 @@
+import { API_BASE } from "../utils/apiBase.js";
+
 const DB_NAME = "RaithaReach";
 const DB_VER = 10;
 const VALID_STORES = new Set(["users", "crops", "jobs", "requirements", "exports"]);
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 function assertStore(store) {
   if (!VALID_STORES.has(store)) {

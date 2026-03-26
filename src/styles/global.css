@@ -70,6 +70,13 @@ body {
   padding-top: 112px;
 }
 
+.rr-grid-2-responsive,
+.rr-grid-3-responsive,
+.rr-grid-4-responsive,
+.rr-grid-split-responsive {
+  min-width: 0;
+}
+
 @media (max-width: 980px) {
   .rr-app-frame {
     padding-top: 154px;
@@ -142,6 +149,15 @@ body {
     left: 14px !important;
     bottom: 14px !important;
   }
+
+  .rr-grid-split-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  .rr-grid-3-responsive,
+  .rr-grid-4-responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
 @media (max-width: 720px) {
@@ -182,5 +198,12 @@ body {
   .rr-activity-panel {
     width: calc(100vw - 28px) !important;
     left: 14px !important;
+  }
+
+  .rr-grid-2-responsive,
+  .rr-grid-3-responsive,
+  .rr-grid-4-responsive,
+  .rr-grid-split-responsive {
+    grid-template-columns: 1fr !important;
   }
 }
