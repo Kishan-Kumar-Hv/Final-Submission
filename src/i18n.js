@@ -86,6 +86,7 @@ const roleMap = {
   farmer: { en: "Farmer", kn: "ರೈತ" },
   retailer: { en: "Wholesaler", kn: "ಸಗಟು ಖರೀದಿದಾರ" },
   delivery: { en: "Delivery Partner", kn: "ವಿತರಣಾ ಸಹಭಾಗಿ" },
+  exporter: { en: "Exporting Desk", kn: "ರಫ್ತು ಡೆಸ್ಕ್" },
 };
 
 const statusMap = {

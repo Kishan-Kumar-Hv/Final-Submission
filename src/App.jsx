@@ -8,6 +8,7 @@ import AuthPage            from "./components/AuthPage.jsx";
 import FarmerDashboard     from "./components/FarmerDashboard.jsx";
 import RetailerDashboard   from "./components/RetailerDashboard.jsx";
 import DeliveryDashboard   from "./components/DeliveryDashboard.jsx";
+import ExporterDashboard   from "./components/ExporterDashboard.jsx";
 import { Toasts, ActivityPanel } from "./components/UI.jsx";
 
 import { useMarketRates }  from "./hooks/useMarketRates.js";
@@ -107,6 +108,28 @@ function normalizeJob(job) {
   };
 }
 
+function normalizeExportRecord(record) {
+  if (!record) return null;
+
+  const kind = record.kind || "listing";
+  const sellerId = record.sellerId || record.exportDeskId || record.wholesalerId || "";
+  const sellerName = record.sellerName || record.exportDeskName || record.wholesalerName || "";
+  const sellerCompany = record.sellerCompany || record.exportDeskName || record.wholesalerName || "";
+  const sellerPhone = record.sellerPhone || record.exportDeskPhone || record.wholesalerPhone || "";
+
+  return {
+    ...record,
+    kind,
+    sellerId,
+    sellerName,
+    sellerCompany,
+    sellerPhone,
+    bids: Array.isArray(record.bids) ? record.bids : [],
+    status: record.status || "open",
+    updatedAt: record.updatedAt || record.createdAt || Date.now(),
+  };
+}
+
 function broadcastCrops(crops) {
   try { channel.postMessage({ type: "CROPS_UPDATE", crops }); } catch (_) {}
 }
@@ -116,6 +139,9 @@ function broadcastJobs(jobs) {
 function broadcastRequirements(requirements) {
   try { channel.postMessage({ type: "REQUIREMENTS_UPDATE", requirements }); } catch (_) {}
 }
+function broadcastExports(exportRecords) {
+  try { channel.postMessage({ type: "EXPORTS_UPDATE", exportRecords }); } catch (_) {}
+}
 
 export default function App() {
   const [page, setPage]   = useState("home");
@@ -124,6 +150,7 @@ export default function App() {
   const [crops, setCrops] = useState([]);
   const [jobs,  setJobs]  = useState([]);
   const [requirements, setRequirements] = useState([]);
+  const [exportRecords, setExportRecords] = useState([]);
   const [actOpen, setActOpen] = useState(true);
   const [activity, setActivity]           = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -144,13 +171,15 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        const [dc, dj, dr] = await Promise.all([dbGetAll("crops"), dbGetAll("jobs"), dbGetAll("requirements")]);
+        const [dc, dj, dr, de] = await Promise.all([dbGetAll("crops"), dbGetAll("jobs"), dbGetAll("requirements"), dbGetAll("exports")]);
         const realCrops = dc.filter(c => !c.id.startsWith("sc") && !c.id.startsWith("seed"));
         const realJobs  = dj.filter(j => !j.id.startsWith("sj") && !j.id.startsWith("seed")).map(normalizeJob);
         const realRequirements = dr.filter(r => !r.id.startsWith("seed"));
+        const realExports = de.filter(record => !String(record.id || "").startsWith("seed")).map(normalizeExportRecord).filter(Boolean);
         setCrops(realCrops);
         setJobs(realJobs);
         setRequirements(realRequirements);
+        setExportRecords(realExports);
       } catch (_) {}
     })();
   }, []);
@@ -175,6 +204,9 @@ export default function App() {
       }
       if (e.data.type === "REQUIREMENTS_UPDATE") {
         setRequirements(e.data.requirements);
+      }
+      if (e.data.type === "EXPORTS_UPDATE") {
+        setExportRecords((e.data.exportRecords || []).map(normalizeExportRecord).filter(Boolean));
       }
       if (e.data.type === "NEW_BID") {
         const bidderLabel = e.data.shopName || e.data.bidderName;
@@ -260,6 +292,52 @@ export default function App() {
         addNotification(pick(lang, `📦 ${tCrop(e.data.cropName, lang)}: ${tStatus(e.data.status, lang)}`, `📦 ${tCrop(e.data.cropName, lang)}: ${tStatus(e.data.status, lang)}`));
         addActivity({ icon: "📦", text: pick(lang, `${tCrop(e.data.cropName, lang)} delivery status: ${tStatus(e.data.status, lang)}`, `${tCrop(e.data.cropName, lang)} ವಿತರಣಾ ಸ್ಥಿತಿ: ${tStatus(e.data.status, lang)}`), ts: Date.now() });
       }
+      if (e.data.type === "NEW_EXPORT_LISTING" && user?.role === "exporter" && user?.exportAccess === "foreign") {
+        const visibleMarkets = Array.isArray(user.marketAccess) && user.marketAccess.length ? user.marketAccess : [user.country].filter(Boolean);
+        if (!visibleMarkets.includes(e.data.targetMarket)) return;
+        addNotification(pick(
+          lang,
+          `🌍 New India export listing: ${tCrop(e.data.cropName, lang)} for ${e.data.targetMarket}.`,
+          `🌍 ${e.data.targetMarket}ಗಾಗಿ ${tCrop(e.data.cropName, lang)} ಹೊಸ ಭಾರತ ರಫ್ತು ಲಿಸ್ಟಿಂಗ್ ಬಂದಿದೆ.`
+        ));
+        addActivity({
+          icon: "🌍",
+          text: pick(
+            lang,
+            `${e.data.sellerName} opened a fresh export listing for ${tCrop(e.data.cropName, lang)} in ${e.data.targetMarket}`,
+            `${e.data.sellerName} ಅವರು ${e.data.targetMarket}ಗೆ ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ಹೊಸ ರಫ್ತು ಲಿಸ್ಟಿಂಗ್ ತೆರೆಯಿದ್ದಾರೆ`
+          ),
+          ts: Date.now(),
+        });
+      }
+      if (e.data.type === "EXPORT_BID_PLACED" && user?.role === "exporter" && user?.exportAccess === "india" && e.data.sellerId === user.id) {
+        addNotification(pick(
+          lang,
+          `🌍 ${e.data.buyerName} bid ${fmtP(e.data.amount)}/kg for ${e.data.quantity}kg on your export lot.`,
+          `🌍 ${e.data.buyerName} ಅವರು ನಿಮ್ಮ ರಫ್ತು ಲಾಟ್‌ಗೆ ${e.data.quantity}ಕೆಜಿಗೆ ${fmtP(e.data.amount)}/ಕೆಜಿ ಬಿಡ್ ಮಾಡಿದ್ದಾರೆ.`
+        ));
+      }
+      if (e.data.type === "EXPORT_BID_ACCEPTED" && user?.role === "exporter" && e.data.buyerId === user.id) {
+        addNotification(pick(
+          lang,
+          `✅ Your export bid for ${tCrop(e.data.cropName, lang)} was accepted by ${e.data.sellerName}.`,
+          `✅ ${e.data.sellerName} ಅವರು ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ರಫ್ತು ಬಿಡ್ ಅನ್ನು ಅಂಗೀಕರಿಸಿದ್ದಾರೆ.`
+        ));
+      }
+      if (e.data.type === "NEW_EXPORT_REQUEST" && user?.role === "exporter" && user?.exportAccess === "india") {
+        addNotification(pick(
+          lang,
+          `🧾 ${e.data.buyerName} requested ${tCrop(e.data.cropName, lang)} for ${e.data.targetMarket}.`,
+          `🧾 ${e.data.buyerName} ಅವರು ${e.data.targetMarket}ಗಾಗಿ ${tCrop(e.data.cropName, lang)} ಬೇಡಿಕೆ ಹಾಕಿದ್ದಾರೆ.`
+        ));
+      }
+      if (e.data.type === "EXPORT_REQUEST_ACCEPTED" && user?.role === "exporter" && e.data.buyerId === user.id) {
+        addNotification(pick(
+          lang,
+          `✅ ${e.data.sellerName} accepted your request for ${tCrop(e.data.cropName, lang)}.`,
+          `✅ ${e.data.sellerName} ಅವರು ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ಬೇಡಿಕೆಯನ್ನು ಅಂಗೀಕರಿಸಿದ್ದಾರೆ.`
+        ));
+      }
     }
     channel.addEventListener("message", onMessage);
     return () => channel.removeEventListener("message", onMessage);
@@ -322,6 +400,132 @@ export default function App() {
     setRequirements(updated);
     broadcastRequirements(updated);
     try { await dbDelete("requirements", requirementId); } catch (_) {}
+  }
+
+  async function onPostExportListing(listing) {
+    const nextListing = normalizeExportRecord(listing);
+    const updated = [nextListing, ...exportRecords];
+    setExportRecords(updated);
+    broadcastExports(updated);
+    try { await dbPut("exports", nextListing); } catch (_) {}
+
+    channel.postMessage({
+      type: "NEW_EXPORT_LISTING",
+      cropName: nextListing.cropName,
+      targetMarket: nextListing.targetMarket,
+      sellerName: nextListing.sellerCompany || nextListing.sellerName,
+    });
+  }
+
+  async function onPlaceExportBid(listingId, bid) {
+    let changed = null;
+    const updated = exportRecords.map((record) => {
+      if (record.id !== listingId || record.kind !== "listing") return record;
+      const existingIndex = (record.bids || []).findIndex((item) => item.buyerId === bid.buyerId);
+      const nextBids = existingIndex >= 0
+        ? (record.bids || []).map((item, index) => index === existingIndex ? bid : item)
+        : [...(record.bids || []), bid];
+      changed = normalizeExportRecord({
+        ...record,
+        bids: nextBids,
+        updatedAt: Date.now(),
+      });
+      return changed;
+    });
+
+    if (!changed) return;
+
+    setExportRecords(updated);
+    broadcastExports(updated);
+    try { await dbPut("exports", changed); } catch (_) {}
+
+    channel.postMessage({
+      type: "EXPORT_BID_PLACED",
+      cropName: changed.cropName,
+      quantity: bid.quantity,
+      amount: bid.amount,
+      buyerName: bid.buyerName,
+      sellerId: changed.sellerId,
+    });
+  }
+
+  async function onAcceptExportBid(listingId, bidId) {
+    const currentListing = exportRecords.find((record) => record.id === listingId && record.kind === "listing");
+    if (!currentListing || currentListing.sellerId !== user?.id) return;
+
+    const acceptedBid = (currentListing.bids || []).find((bid) => bid.id === bidId);
+    if (!acceptedBid) return;
+
+    const updated = exportRecords.map((record) =>
+      record.id === listingId
+        ? normalizeExportRecord({
+            ...record,
+            status: "accepted",
+            acceptedBidId: bidId,
+            acceptedBid,
+            acceptedAt: Date.now(),
+            updatedAt: Date.now(),
+          })
+        : record
+    );
+
+    const changed = updated.find((record) => record.id === listingId);
+    setExportRecords(updated);
+    broadcastExports(updated);
+    try { await dbPut("exports", changed); } catch (_) {}
+
+    channel.postMessage({
+      type: "EXPORT_BID_ACCEPTED",
+      cropName: changed?.cropName,
+      buyerId: acceptedBid.buyerId,
+      sellerName: changed?.sellerCompany || changed?.sellerName,
+    });
+  }
+
+  async function onPostExportRequest(request) {
+    const nextRequest = normalizeExportRecord(request);
+    const updated = [nextRequest, ...exportRecords];
+    setExportRecords(updated);
+    broadcastExports(updated);
+    try { await dbPut("exports", nextRequest); } catch (_) {}
+
+    channel.postMessage({
+      type: "NEW_EXPORT_REQUEST",
+      cropName: nextRequest.cropName,
+      targetMarket: nextRequest.targetMarket,
+      buyerName: nextRequest.buyerCompany || nextRequest.buyerName,
+    });
+  }
+
+  async function onAcceptExportRequest(requestId, response) {
+    const currentRequest = exportRecords.find((record) => record.id === requestId && record.kind === "request");
+    if (!currentRequest || currentRequest.status !== "open") return;
+
+    const updated = exportRecords.map((record) =>
+      record.id === requestId
+        ? normalizeExportRecord({
+            ...record,
+            status: "accepted",
+            acceptedResponse: {
+              ...response,
+              acceptedAt: Date.now(),
+            },
+            updatedAt: Date.now(),
+          })
+        : record
+    );
+
+    const changed = updated.find((record) => record.id === requestId);
+    setExportRecords(updated);
+    broadcastExports(updated);
+    try { await dbPut("exports", changed); } catch (_) {}
+
+    channel.postMessage({
+      type: "EXPORT_REQUEST_ACCEPTED",
+      cropName: changed?.cropName,
+      buyerId: changed?.buyerId,
+      sellerName: response.sellerCompany || response.sellerName,
+    });
   }
 
   // Retailer places a bid → save to DB → broadcast to all tabs
@@ -829,6 +1033,8 @@ export default function App() {
   }
 
   // ── Shared props ─────────────────────────────────────────────
+  const exportListings = exportRecords.filter((record) => record.kind === "listing");
+  const exportRequests = exportRecords.filter((record) => record.kind === "request");
   const shared = { user, crops, jobs, requirements, rates, toast, addActivity, addNotification, lang };
 
   return (
@@ -878,6 +1084,21 @@ export default function App() {
           onReleaseRoute={onReleaseDeliveryRoute}
           onUpdateStatus={onUpdateStatus}
           onDeleteJob={onDeleteJob}
+        />
+      )}
+      {user && user.role === "exporter" && (
+        <ExporterDashboard
+          user={user}
+          exportListings={exportListings}
+          exportRequests={exportRequests}
+          toast={toast}
+          addActivity={addActivity}
+          lang={lang}
+          onPostExportListing={onPostExportListing}
+          onPlaceExportBid={onPlaceExportBid}
+          onAcceptExportBid={onAcceptExportBid}
+          onPostExportRequest={onPostExportRequest}
+          onAcceptExportRequest={onAcceptExportRequest}
         />
       )}
 

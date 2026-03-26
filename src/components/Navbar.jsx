@@ -5,9 +5,9 @@ import { pick, tRole } from "../i18n.js";
 export default function Navbar({ page, setPage, user, onLogout, lang, setLang, notifications, setNotifications }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const unread = notifications.filter(n => n.unread).length;
-  const roleIcon      = { farmer: "🧑‍🌾", retailer: "🏪", delivery: "🚛" };
-  const roleColor     = { farmer: "var(--green-pale)", retailer: "var(--gold-pale)", delivery: "var(--blue-pale)" };
-  const roleTextColor = { farmer: "var(--green)",      retailer: "var(--gold)",      delivery: "var(--blue)" };
+  const roleIcon      = { farmer: "🧑‍🌾", retailer: "🏪", delivery: "🚛", exporter: "🌍" };
+  const roleColor     = { farmer: "var(--green-pale)", retailer: "var(--gold-pale)", delivery: "var(--blue-pale)", exporter: "#eef2ff" };
+  const roleTextColor = { farmer: "var(--green)",      retailer: "var(--gold)",      delivery: "var(--blue)",      exporter: "#4338ca" };
 
   function NavBtn({ label, active, onClick }) {
     return (

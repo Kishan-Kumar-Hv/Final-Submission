@@ -5,7 +5,7 @@ import { dbClear, dbGetAll, dbPut } from "../db/indexedDB.js";
 import { DEMO_USERS } from "../data/constants.js";
 import { pick } from "../i18n.js";
 
-const RESET_MARKER = "rr-fresh-start-v1";
+const RESET_MARKER = "rr-fresh-start-v2";
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 export default function AuthPage({ onLogin, toast, lang }) {
@@ -18,6 +18,8 @@ export default function AuthPage({ onLogin, toast, lang }) {
     name: "",
     phone: "",
     role: "farmer",
+    clientId: "",
+    password: "",
   });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
     },
     retailer: {
       icon: "🏪",
-      label: pick(lang, "Wholesaler / Buyer", "ಸಗಟು ಖರೀದಿದಾರ"),
+      label: pick(lang, "Wholesaler", "ಸಗಟು ಖರೀದಿದಾರ"),
       short: pick(lang, "Wholesaler", "ಸಗಟು"),
       desc: pick(lang, "Browse crops and place wholesale bids fast", "ಬೆಳೆಗಳನ್ನು ನೋಡಿ ಮತ್ತು ಸಗಟು ಬಿಡ್‌ಗಳನ್ನು ಬೇಗ ಮಾಡಿ"),
       color: "var(--gold)",
@@ -49,9 +51,17 @@ export default function AuthPage({ onLogin, toast, lang }) {
       color: "var(--blue)",
       bg: "var(--blue-pale)",
     },
+    exporter: {
+      icon: "🌍",
+      label: pick(lang, "Exporting Desk", "ರಫ್ತು ಡೆಸ್ಕ್"),
+      short: pick(lang, "Exporting", "ರಫ್ತು"),
+      desc: pick(lang, "Separate portal for India export supply and Gulf or Singapore demand", "ಭಾರತ ರಫ್ತು ಪೂರೈಕೆ ಮತ್ತು ಗಲ್ಫ್ ಅಥವಾ ಸಿಂಗಾಪುರ್ ಬೇಡಿಕೆಗೆ ಪ್ರತ್ಯೇಕ ಪೋರ್ಟಲ್"),
+      color: "#4338ca",
+      bg: "#eef2ff",
+    },
   };
   const loginRoleEntries = Object.entries(roles);
-  const registerRoleEntries = loginRoleEntries;
+  const registerRoleEntries = loginRoleEntries.filter(([key]) => key !== "exporter");
 
   function normalizePhone(value) {
     return value.replace(/\D/g, "").slice(-10);
@@ -204,6 +214,41 @@ export default function AuthPage({ onLogin, toast, lang }) {
   }
 
   async function handleLogin() {
+    if (form.role === "exporter") {
+      const clientId = form.clientId.trim().toUpperCase();
+      const password = form.password.trim();
+
+      if (!clientId || !password) {
+        setErr(pick(lang, "Enter the exporter client ID and password.", "ರಫ್ತು ಡೆಸ್ಕ್ ಕ್ಲೈಯಂಟ್ ಐಡಿ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ."));
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const allUsers = await dbGetAll("users");
+        const found = allUsers.find((user) =>
+          user.role === "exporter"
+          && String(user.clientId || "").trim().toUpperCase() === clientId
+          && String(user.password || "") === password
+        );
+
+        if (!found) {
+          setErr(pick(lang, "Exporter demo access not found. Check the client ID and password.", "ರಫ್ತು ಡೆಮೊ ಪ್ರವೇಶ ಸಿಗಲಿಲ್ಲ. ಕ್ಲೈಯಂಟ್ ಐಡಿ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಪರಿಶೀಲಿಸಿ."));
+        } else {
+          toast({
+            msg: pick(lang, `🌍 Exporting desk ready for ${found.companyName || found.name}.`, `🌍 ${found.companyName || found.name} ಗಾಗಿ ರಫ್ತು ಡೆಸ್ಕ್ ಸಿದ್ಧವಾಗಿದೆ.`),
+            icon: "🌍",
+          });
+          onLogin(found);
+        }
+      } catch (error) {
+        setErr(error?.message || pick(lang, "Could not open the exporting desk right now.", "ಈಗ ರಫ್ತು ಡೆಸ್ಕ್ ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ."));
+      }
+
+      setLoading(false);
+      return;
+    }
+
     const phone = normalizePhone(form.phone);
     if (phone.length !== 10) {
       setErr(pick(lang, "Please enter a valid 10-digit phone number.", "ದಯವಿಟ್ಟು ಮಾನ್ಯ 10 ಅಂಕೆಯ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ."));
@@ -228,6 +273,12 @@ export default function AuthPage({ onLogin, toast, lang }) {
   }
 
   async function handleRegister() {
+    if (form.role === "exporter") {
+      setErr(pick(lang, "Main exporter onboarding can be added later. Use the exporter demo login on the Login tab for now.", "ಮುಖ್ಯ ರಫ್ತು ಆನ್‌ಬೋರ್ಡಿಂಗ್ ನಂತರ ಸೇರಿಸಬಹುದು. ಈಗ ಲಾಗಿನ್ ಟ್ಯಾಬ್‌ನಲ್ಲಿರುವ ರಫ್ತು ಡೆಮೊ ಲಾಗಿನ್ ಬಳಸಿ."));
+      setLoading(false);
+      return;
+    }
+
     const phone = normalizePhone(form.phone);
     if (!form.name.trim()) {
       setErr(form.role === "retailer"
@@ -293,6 +344,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
   useEffect(() => {
     resetOtp();
     setErr("");
+    if (tab === "register" && form.role === "exporter") {
+      setForm((current) => ({ ...current, role: "farmer" }));
+    }
   }, [tab, form.role]);
 
   useEffect(() => {
@@ -307,7 +361,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
     (async () => {
       try {
         if (!localStorage.getItem(RESET_MARKER)) {
-          await Promise.all([dbClear("crops"), dbClear("jobs"), dbClear("requirements")]);
+          await Promise.all([dbClear("crops"), dbClear("jobs"), dbClear("requirements"), dbClear("exports")]);
           localStorage.setItem(RESET_MARKER, "done");
         }
         await Promise.all(DEMO_USERS.map((user) => dbPut("users", user)));
@@ -359,16 +413,16 @@ export default function AuthPage({ onLogin, toast, lang }) {
           <div style={{ position: "relative", zIndex: 1, padding: 30, display: "flex", flexDirection: "column", height: "100%", color: "#fff" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontWeight: 800, letterSpacing: .5, marginBottom: 20 }}>
               <span>🌾</span>
-              {pick(lang, "Farm-Direct Presentation Flow", "ಕೃಷಿ ನೇರ ಪ್ರಸ್ತುತಿ ಹರಿವು")}
+              {pick(lang, "Domestic Flow + Separate Exporting Portal", "ದೇಶೀಯ ಹರಿವು + ಪ್ರತ್ಯೇಕ ರಫ್ತು ಪೋರ್ಟಲ್")}
             </div>
             <h1 style={{ fontSize: "clamp(2rem,4vw,3.1rem)", lineHeight: 1.05, fontWeight: 900, marginBottom: 14 }}>
-              {pick(lang, "Login for Farmer, Wholesaler, and Delivery Flow", "ರೈತ, ಸಗಟು ಮತ್ತು ವಿತರಣಾ ಹರಿವಿಗೆ ಲಾಗಿನ್ ಮಾಡಿ")}
+              {pick(lang, "Login For Domestic Trade Or Separate Exporting", "ದೇಶೀಯ ವ್ಯಾಪಾರ ಅಥವಾ ಪ್ರತ್ಯೇಕ ರಫ್ತು ಪೋರ್ಟಲ್‌ಗೆ ಲಾಗಿನ್ ಮಾಡಿ")}
             </h1>
             <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(255,255,255,.85)", maxWidth: 520, marginBottom: 28 }}>
               {pick(
                 lang,
-                "This auth flow is trimmed for presentation: farmers, wholesalers, and delivery partners all sign in with a simple phone-first OTP flow.",
-                "ಈ ಆಥ್ ಹರಿವು ಪ್ರಸ್ತುತಿಗಾಗಿ ಸರಳಗೊಳಿಸಲಾಗಿದೆ: ರೈತರು, ಸಗಟು ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಎಲ್ಲರೂ ಸರಳ ಫೋನ್-ಮೊದಲ OTP ಹರಿವಿನಿಂದ ಲಾಗಿನ್ ಮಾಡುತ್ತಾರೆ."
+                "Keep farmer, wholesaler, and delivery inside the domestic marketplace. Use a completely separate exporting portal for India supply to Gulf nations and Singapore, with demo login for now and full onboarding later.",
+                "ರೈತ, ಸಗಟು ಮತ್ತು ವಿತರಣೆಯನ್ನು ದೇಶೀಯ ಮಾರುಕಟ್ಟೆಯೊಳಗೆ ಇಡಿ. ಗಲ್ಫ್ ರಾಷ್ಟ್ರಗಳು ಮತ್ತು ಸಿಂಗಾಪುರ್‌ಗೆ ಭಾರತ ಪೂರೈಕೆಯಿಗಾಗಿ ಸಂಪೂರ್ಣ ಪ್ರತ್ಯೇಕ ರಫ್ತು ಪೋರ್ಟಲ್ ಬಳಸಿ; ಈಗ ಡೆಮೊ ಲಾಗಿನ್, ನಂತರ ಪೂರ್ಣ ಆನ್‌ಬೋರ್ಡಿಂಗ್."
               )}
             </p>
 
@@ -377,8 +431,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
                 pick(lang, "Farmer logs in with just phone number + OTP", "ರೈತರು ಕೇವಲ ಫೋನ್ ಸಂಖ್ಯೆ + OTP ಮೂಲಕ ಲಾಗಿನ್ ಮಾಡುತ್ತಾರೆ"),
                 pick(lang, "Wholesalers keep the existing local crop bidding flow", "ಸಗಟು ಖರೀದಿದಾರರು ಈಗಿನ ಸ್ಥಳೀಯ ಬೆಳೆ ಬಿಡ್ ಹರಿವನ್ನೇ ಮುಂದುವರಿಸುತ್ತಾರೆ"),
                 pick(lang, "Delivery partners claim pickups after orders are confirmed", "ಆದೇಶ ದೃಢೀಕರಿಸಿದ ನಂತರ ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಪಿಕಪ್ ಕ್ಲೇಮ್ ಮಾಡುತ್ತಾರೆ"),
-                pick(lang, "Farmer, wholesaler, and delivery demo accounts are ready below", "ರೈತ, ಸಗಟು ಮತ್ತು ವಿತರಣಾ ಡೆಮೊ ಖಾತೆಗಳು ಕೆಳಗೆ ಸಿದ್ಧವಾಗಿವೆ"),
-                pick(lang, "Old crop and order data is reset so you start fresh", "ನೀವು ಶುದ್ಧವಾಗಿ ಪ್ರಾರಂಭಿಸಲು ಹಳೆಯ ಬೆಳೆ ಮತ್ತು ಆದೇಶ ಡೇಟಾವನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ"),
+                pick(lang, "Exporting stays fully separate from farmer, wholesaler, and delivery", "ರಫ್ತು ಭಾಗವು ರೈತ, ಸಗಟು ಮತ್ತು ವಿತರಣೆಯಿಂದ ಸಂಪೂರ್ಣವಾಗಿ ಪ್ರತ್ಯೇಕವಾಗಿರುತ್ತದೆ"),
+                pick(lang, "India export desk and Gulf or Singapore import demo accounts are ready below", "ಭಾರತ ರಫ್ತು ಡೆಸ್ಕ್ ಮತ್ತು ಗಲ್ಫ್ ಅಥವಾ ಸಿಂಗಾಪುರ್ ಆಮದು ಡೆಮೊ ಖಾತೆಗಳು ಕೆಳಗೆ ಸಿದ್ಧವಾಗಿವೆ"),
+                pick(lang, "Old crop, order, requirement, and export data is reset so you start fresh", "ನೀವು ಶುದ್ಧವಾಗಿ ಪ್ರಾರಂಭಿಸಲು ಹಳೆಯ ಬೆಳೆ, ಆದೇಶ, ಬೇಡಿಕೆ ಮತ್ತು ರಫ್ತು ಡೇಟಾವನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ"),
               ].map((line) => (
                 <div key={line} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "rgba(255,255,255,.9)" }}>
                   <span style={{ fontSize: 16 }}>✅</span>
@@ -396,7 +451,8 @@ export default function AuthPage({ onLogin, toast, lang }) {
                   `1. ${pick(lang, "Farmer logs in and posts a crop", "ರೈತ ಲಾಗಿನ್ ಮಾಡಿ ಬೆಳೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ")}`,
                   `2. ${pick(lang, "Wholesaler logs in and places a live bid or posts a crop need", "ಸಗಟು ಖರೀದಿದಾರರು ಲಾಗಿನ್ ಮಾಡಿ ಲೈವ್ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ ಅಥವಾ ಬೆಳೆ ಬೇಡಿಕೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ")}`,
                   `3. ${pick(lang, "Farmer accepts the best match and confirms the order", "ರೈತರು ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಯನ್ನು ಸ್ವೀಕರಿಸಿ ಆದೇಶವನ್ನು ದೃಢೀಕರಿಸುತ್ತಾರೆ")}`,
-                  `4. ${pick(lang, "Delivery partner claims the route and completes pickup with OTP", "ವಿತರಣಾ ಸಹಭಾಗಿ ಮಾರ್ಗವನ್ನು ಕ್ಲೇಮ್ ಮಾಡಿ OTP ಮೂಲಕ ಪಿಕಪ್ ಪೂರ್ಣಗೊಳಿಸುತ್ತಾರೆ")}`,
+                  `4. ${pick(lang, "Exporting desk opens separate lots for Gulf nations or Singapore demand", "ರಫ್ತು ಡೆಸ್ಕ್ ಗಲ್ಫ್ ರಾಷ್ಟ್ರಗಳು ಅಥವಾ ಸಿಂಗಾಪುರ್ ಬೇಡಿಕೆಗೆ ಪ್ರತ್ಯೇಕ ಲಾಟ್ ತೆರೆಯುತ್ತದೆ")}`,
+                  `5. ${pick(lang, "Foreign importers bid on those lots or request the exact crop they need", "ವಿದೇಶಿ ಆಮದುದಾರರು ಆ ಲಾಟ್‌ಗಳ ಮೇಲೆ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ ಅಥವಾ ತಮಗೆ ಬೇಕಾದ ಬೆಳೆಗಾಗಿ ಬೇಡಿಕೆ ಹಾಕುತ್ತಾರೆ")}`,
                 ].map((step) => (
                   <div key={step} style={{ fontSize: 13, color: "rgba(255,255,255,.86)" }}>{step}</div>
                 ))}
@@ -410,7 +466,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
             <div style={{ textAlign: "center", marginBottom: 22 }}>
               <div style={{ width: 66, height: 66, borderRadius: 20, background: "linear-gradient(135deg, #9a5523 0%, #c88422 48%, #667a2f 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 14px", boxShadow: "0 10px 28px rgba(154,85,35,.22)" }}>🌾</div>
               <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--text)", marginBottom: 6 }}>Raitha Reach</h1>
-              <p style={{ fontSize: 14, color: "var(--text3)" }}>{pick(lang, "Farm-direct marketplace for three working roles", "ಮೂರು ಕಾರ್ಯನಿರ್ವಹಿಸುವ ಪಾತ್ರಗಳ ಫಾರ್ಮ್-ಡೈರೆಕ್ಟ್ ಮಾರುಕಟ್ಟೆ")}</p>
+              <p style={{ fontSize: 14, color: "var(--text3)" }}>{pick(lang, "Domestic marketplace plus a dedicated exporting desk", "ದೇಶೀಯ ಮಾರುಕಟ್ಟೆ ಜೊತೆಗೆ ಸಮರ್ಪಿತ ರಫ್ತು ಡೆಸ್ಕ್")}</p>
             </div>
 
             <div style={{ display: "flex", background: "var(--bg)", borderRadius: 14, padding: 4, marginBottom: 18, border: "1px solid var(--border)" }}>
@@ -440,12 +496,14 @@ export default function AuthPage({ onLogin, toast, lang }) {
               ))}
             </div>
 
-            <div style={{ background: "var(--green-xp)", border: "1px solid var(--green-mid)", borderRadius: 14, padding: "12px 14px", marginBottom: 18 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--green)", marginBottom: 6 }}>
+            <div style={{ background: tab === "login" && form.role === "exporter" ? "#eef2ff" : "var(--green-xp)", border: `1px solid ${tab === "login" && form.role === "exporter" ? "#c7d2fe" : "var(--green-mid)"}`, borderRadius: 14, padding: "12px 14px", marginBottom: 18 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: tab === "login" && form.role === "exporter" ? "#4338ca" : "var(--green)", marginBottom: 6 }}>
                 {otpMeta
                   ? otpMeta.deliveryMode === "live"
                     ? pick(lang, "📲 OTP sent. Enter the code from your SMS inbox.", "📲 OTP ಕಳುಹಿಸಲಾಗಿದೆ. ನಿಮ್ಮ SMS ಇನ್‌ಬಾಕ್ಸ್‌ನಿಂದ ಕೋಡ್ ನಮೂದಿಸಿ.")
                     : pick(lang, "📲 OTP sent. It auto-fills here for demo.", "📲 OTP ಕಳುಹಿಸಲಾಗಿದೆ. ಡೆಮೋಗಾಗಿ ಅದು ಇಲ್ಲಿ ಸ್ವಯಂ ತುಂಬುತ್ತದೆ.")
+                  : tab === "login" && form.role === "exporter"
+                    ? pick(lang, "🌍 Demo exporter login for India supply and Gulf or Singapore demand", "🌍 ಭಾರತ ಪೂರೈಕೆ ಮತ್ತು ಗಲ್ಫ್ ಅಥವಾ ಸಿಂಗಾಪುರ್ ಬೇಡಿಕೆಗೆ ಡೆಮೊ ರಫ್ತು ಲಾಗಿನ್")
                   : tab === "login"
                     ? pick(lang, "👋 Enter your phone number to receive OTP", "👋 OTP ಪಡೆಯಲು ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ")
                     : pick(lang, "👋 Register with just your name and number", "👋 ಕೇವಲ ನಿಮ್ಮ ಹೆಸರು ಮತ್ತು ಸಂಖ್ಯೆಯಿಂದ ನೋಂದಣಿ ಮಾಡಿ")}
@@ -453,8 +511,12 @@ export default function AuthPage({ onLogin, toast, lang }) {
               <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.6 }}>
                 {pick(
                   lang,
-                  "Demo accounts stay available for judges, and the project data has been reset so you can start fresh.",
-                  "ನ್ಯಾಯಾಧೀಶರಿಗಾಗಿ ಡೆಮೊ ಖಾತೆಗಳು ಲಭ್ಯವಿವೆ, ಮತ್ತು ನೀವು ಶುದ್ಧವಾಗಿ ಪ್ರಾರಂಭಿಸಲು ಪ್ರಾಜೆಕ್ಟ್ ಡೇಟಾವನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ."
+                  tab === "login" && form.role === "exporter"
+                    ? "Exporter access is demo-only for now. Main exporter onboarding can be added later without mixing it into the domestic roles."
+                    : "Demo accounts stay available for judges, and the project data has been reset so you can start fresh.",
+                  tab === "login" && form.role === "exporter"
+                    ? "ರಫ್ತು ಪ್ರವೇಶ ಈಗ ಡೆಮೋ ಮಾತ್ರ. ನಂತರ ಮುಖ್ಯ ರಫ್ತು ಆನ್‌ಬೋರ್ಡಿಂಗ್ ಸೇರಿಸಬಹುದು ಮತ್ತು ಅದು ದೇಶೀಯ ಪಾತ್ರಗಳೊಂದಿಗೆ ಮಿಶ್ರಣವಾಗುವುದಿಲ್ಲ."
+                    : "ನ್ಯಾಯಾಧೀಶರಿಗಾಗಿ ಡೆಮೊ ಖಾತೆಗಳು ಲಭ್ಯವಿವೆ, ಮತ್ತು ನೀವು ಶುದ್ಧವಾಗಿ ಪ್ರಾರಂಭಿಸಲು ಪ್ರಾಜೆಕ್ಟ್ ಡೇಟಾವನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ."
                 )}
               </div>
             </div>
@@ -483,7 +545,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
                           <span style={{ fontSize: 10, fontWeight: 800, color: roleMeta.color, textTransform: "uppercase", letterSpacing: .5 }}>{pick(lang, "Instant Demo", "ತಕ್ಷಣದ ಡೆಮೊ")}</span>
                         </div>
                         <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 5 }}>
-                          {roleMeta.label} · {demoUser.phone}
+                          {roleMeta.label} · {demoUser.role === "exporter" ? `${demoUser.clientId} · ${demoUser.country}` : demoUser.phone}
                         </div>
                       </button>
                     );
@@ -554,7 +616,41 @@ export default function AuthPage({ onLogin, toast, lang }) {
                 </>
               )}
 
-              {!otpMeta && (
+              {!otpMeta && tab === "login" && form.role === "exporter" && (
+                <>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 6 }}>
+                      {pick(lang, "Client ID *", "ಕ್ಲೈಯಂಟ್ ಐಡಿ *")}
+                    </label>
+                    <input
+                      style={inp}
+                      name="clientId"
+                      value={form.clientId}
+                      onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value.toUpperCase() }))}
+                      placeholder={pick(lang, "e.g. GULF-IMPORT-01", "ಉದಾ. GULF-IMPORT-01")}
+                      onFocus={(event) => { event.target.style.borderColor = "#4338ca"; }}
+                      onBlur={(event) => { event.target.style.borderColor = "var(--border)"; }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 6 }}>
+                      {pick(lang, "Password *", "ಪಾಸ್‌ವರ್ಡ್ *")}
+                    </label>
+                    <input
+                      type="password"
+                      style={inp}
+                      name="password"
+                      value={form.password}
+                      onChange={h}
+                      placeholder={pick(lang, "Enter exporter demo password", "ರಫ್ತು ಡೆಮೊ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ")}
+                      onFocus={(event) => { event.target.style.borderColor = "#4338ca"; }}
+                      onBlur={(event) => { event.target.style.borderColor = "var(--border)"; }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {!otpMeta && !(tab === "login" && form.role === "exporter") && (
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 6 }}>
                     {pick(lang, "Phone Number *", "ಫೋನ್ ಸಂಖ್ಯೆ *")}
@@ -609,6 +705,8 @@ export default function AuthPage({ onLogin, toast, lang }) {
                   ? pick(lang, "⏳ Please wait...", "⏳ ದಯವಿಟ್ಟು ಕಾಯಿರಿ...")
                   : otpMeta
                     ? pick(lang, "✅ Verify OTP", "✅ OTP ಪರಿಶೀಲಿಸಿ")
+                    : tab === "login" && form.role === "exporter"
+                      ? pick(lang, "🌍 Open Exporting Desk", "🌍 ರಫ್ತು ಡೆಸ್ಕ್ ತೆರೆಯಿರಿ")
                     : tab === "login"
                       ? pick(lang, "📲 Send OTP", "📲 OTP ಕಳುಹಿಸಿ")
                       : pick(lang, "📲 Register with OTP", "📲 OTP ಮೂಲಕ ನೋಂದಣಿ ಮಾಡಿ")}
@@ -616,7 +714,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
 
               <div style={{ textAlign: "center", fontSize: 13, color: "var(--text3)" }}>
                 {tab === "login"
-                  ? <>{pick(lang, "Don't have an account?", "ಖಾತೆ ಇಲ್ಲವೇ?")} <span onClick={() => { setTab("register"); setErr(""); }} style={{ color: "var(--green)", fontWeight: 800, cursor: "pointer" }}>{pick(lang, "Register here", "ಇಲ್ಲಿ ನೋಂದಣಿ ಮಾಡಿ")}</span></>
+                  ? form.role === "exporter"
+                    ? pick(lang, "Main exporter registration can be added later. Use the demo exporter login for now.", "ಮುಖ್ಯ ರಫ್ತು ನೋಂದಣಿ ನಂತರ ಸೇರಿಸಬಹುದು. ಈಗ ಡೆಮೊ ರಫ್ತು ಲಾಗಿನ್ ಬಳಸಿ.")
+                    : <>{pick(lang, "Don't have an account?", "ಖಾತೆ ಇಲ್ಲವೇ?")} <span onClick={() => { setTab("register"); setErr(""); }} style={{ color: "var(--green)", fontWeight: 800, cursor: "pointer" }}>{pick(lang, "Register here", "ಇಲ್ಲಿ ನೋಂದಣಿ ಮಾಡಿ")}</span></>
                   : <>{pick(lang, "Already have an account?", "ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ?")} <span onClick={() => { setTab("login"); setErr(""); }} style={{ color: "var(--green)", fontWeight: 800, cursor: "pointer" }}>{pick(lang, "Login here", "ಇಲ್ಲಿ ಲಾಗಿನ್ ಮಾಡಿ")}</span></>
                 }
               </div>

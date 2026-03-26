@@ -160,6 +160,30 @@ export function guessHarvestTypeForCrop(name, category = "") {
   return "single_harvest";
 }
 
+export const EXPORT_MARKETS = [
+  "UAE",
+  "Saudi Arabia",
+  "Qatar",
+  "Oman",
+  "Kuwait",
+  "Bahrain",
+  "Singapore",
+];
+
+export const EXPORT_MARKET_GROUPS = {
+  UAE: "Gulf Nations",
+  "Saudi Arabia": "Gulf Nations",
+  Qatar: "Gulf Nations",
+  Oman: "Gulf Nations",
+  Kuwait: "Gulf Nations",
+  Bahrain: "Gulf Nations",
+  Singapore: "Singapore",
+};
+
+export function getExportMarketGroup(name) {
+  return EXPORT_MARKET_GROUPS[name] || "Global";
+}
+
 export const DEMO_USERS = [
   {
     id: "demo_farmer",
@@ -194,6 +218,54 @@ export const DEMO_USERS = [
     village: "Mandya",
     phone: "9876509876",
     pin: "571401",
+  },
+  {
+    id: "demo_export_india",
+    name: "Raitha Export Desk",
+    companyName: "Raitha Export Desk India",
+    email: "india.export@raithareach.app",
+    password: "demo123",
+    clientId: "IND-EXPORT-01",
+    role: "exporter",
+    exportAccess: "india",
+    district: "Bengaluru Rural",
+    village: "Hoskote",
+    phone: "9988011001",
+    pin: "560001",
+    country: "India",
+    marketAccess: EXPORT_MARKETS,
+  },
+  {
+    id: "demo_export_gulf",
+    name: "Gulf Fresh Imports",
+    companyName: "Gulf Fresh Imports",
+    email: "gulf.demo@raithareach.app",
+    password: "demo123",
+    clientId: "GULF-IMPORT-01",
+    role: "exporter",
+    exportAccess: "foreign",
+    district: "Dubai",
+    village: "Dubai",
+    phone: "971509001100",
+    pin: "DXB001",
+    country: "UAE",
+    marketAccess: ["UAE", "Saudi Arabia", "Qatar", "Oman", "Kuwait", "Bahrain"],
+  },
+  {
+    id: "demo_export_sg",
+    name: "Lion City Produce",
+    companyName: "Lion City Produce",
+    email: "singapore.demo@raithareach.app",
+    password: "demo123",
+    clientId: "SGP-IMPORT-01",
+    role: "exporter",
+    exportAccess: "foreign",
+    district: "Singapore",
+    village: "Singapore",
+    phone: "6581234567",
+    pin: "SG100",
+    country: "Singapore",
+    marketAccess: ["Singapore"],
   },
 ];
 
