@@ -5,9 +5,9 @@ export default function Sidebar({user,view,setView,navItems,lang}){
   const roleBg={farmer:"var(--green-pale)",retailer:"var(--gold-pale)",delivery:"var(--blue-pale)"};
   const roleIcon={farmer:"🧑‍🌾",retailer:"🏪",delivery:"🚛"};
   return(
-    <aside style={{width:220,flexShrink:0,background:"#fff",borderRight:"1px solid var(--border)",display:"flex",flexDirection:"column",position:"sticky",top:100,height:"calc(100vh - 100px)",overflowY:"auto"}}>
+    <aside className="rr-sidebar" style={{width:220,flexShrink:0,background:"#fff",borderRight:"1px solid var(--border)",display:"flex",flexDirection:"column",position:"sticky",top:100,height:"calc(100vh - 100px)",overflowY:"auto"}}>
       {/* User card */}
-      <div style={{padding:"20px 16px 16px",borderBottom:"1px solid var(--bg2)"}}>
+      <div className="rr-sidebar-user" style={{padding:"20px 16px 16px",borderBottom:"1px solid var(--bg2)"}}>
         <div style={{width:52,height:52,borderRadius:14,background:roleBg[user.role],display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,marginBottom:12,border:`2px solid ${roleColor[user.role]}22`}}>{roleIcon[user.role]}</div>
         <div style={{fontWeight:800,fontSize:14,color:"var(--text)",lineHeight:1.2}}>{user.name}</div>
         <div style={{fontSize:11,fontWeight:700,color:roleColor[user.role],letterSpacing:.4,marginTop:2}}>{tRole(user.role,lang)}</div>
@@ -22,7 +22,7 @@ export default function Sidebar({user,view,setView,navItems,lang}){
       </div>
 
       {/* Nav items */}
-      <nav style={{padding:"8px 0",flex:1}}>
+      <nav className="rr-sidebar-nav" style={{padding:"8px 0",flex:1}}>
         {navItems.map(n=>(
           <button key={n.k} onClick={()=>setView(n.k)}
             style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",width:"100%",border:"none",background:view===n.k?"var(--green-pale)":"transparent",color:view===n.k?"var(--green)":"var(--text2)",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:600,transition:"all .15s",borderRight:view===n.k?"3px solid var(--green)":"3px solid transparent",textAlign:"left"}}>

@@ -7,7 +7,7 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
   const unread = notifications.filter(n => n.unread).length;
   const roleIcon      = { farmer: "🧑‍🌾", retailer: "🏪", delivery: "🚛" };
   const roleColor     = { farmer: "var(--green-pale)", retailer: "var(--gold-pale)", delivery: "var(--blue-pale)" };
-  const roleTextColor = { farmer: "var(--green)",      retailer: "var(--gold)",      delivery: "var(--blue)"      };
+  const roleTextColor = { farmer: "var(--green)",      retailer: "var(--gold)",      delivery: "var(--blue)" };
 
   function NavBtn({ label, active, onClick }) {
     return (
@@ -20,10 +20,10 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
   }
 
   return (
-    <nav onClick={() => setNotifOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, height: 64, background: "linear-gradient(90deg, rgba(251,248,238,.97), rgba(255,252,245,.97))", borderBottom: "1px solid rgba(200,132,34,.16)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", boxShadow: "0 6px 24px rgba(102,122,47,.08)" }}>
+    <nav className="rr-navbar" onClick={() => setNotifOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, minHeight: 64, background: "linear-gradient(90deg, rgba(251,248,238,.97), rgba(255,252,245,.97))", borderBottom: "1px solid rgba(200,132,34,.16)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 24px", boxShadow: "0 6px 24px rgba(102,122,47,.08)", gap: 12, flexWrap: "wrap" }}>
 
       {/* Logo — always goes to dashboard if logged in, else home */}
-      <div onClick={() => setPage(user ? "portal" : "home")} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}>
+      <div className="rr-navbar-brand" onClick={() => setPage(user ? "portal" : "home")} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}>
         <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, #9a5523 0%, #c88422 45%, #667a2f 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 8px 18px rgba(154,85,35,.22)" }}>🌾</div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text)", lineHeight: 1 }}>{lang === "en" ? "Raitha Reach" : "ರೈತ ರೀಚ್"}</div>
@@ -33,7 +33,7 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
 
       {/* ── Center nav: LOGGED OUT — Home · About · Login ── */}
       {!user && (
-        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <div className="rr-navbar-center" style={{ display: "flex", alignItems: "center", gap: 2 }}>
           <NavBtn label={lang === "en" ? "Home"  : "ಮುಖಪುಟ"} active={page === "home"}  onClick={() => setPage("home")}  />
           <NavBtn label={lang === "en" ? "About" : "ಬಗ್ಗೆ"}   active={page === "about"} onClick={() => setPage("about")} />
           <NavBtn label={lang === "en" ? "Login" : "ಲಾಗಿನ್"}  active={page === "auth"}  onClick={() => setPage("auth")}  />
@@ -42,18 +42,40 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
 
       {/* ── Center nav: LOGGED IN — only Dashboard ── */}
       {user && (
-        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <div className="rr-navbar-center" style={{ display: "flex", alignItems: "center", gap: 2 }}>
           <NavBtn label={lang === "en" ? "Dashboard" : "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್"} active={page === "portal"} onClick={() => setPage("portal")} />
         </div>
       )}
 
       {/* Right side */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }} onClick={e => e.stopPropagation()}>
+      <div className="rr-navbar-right" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
         {/* Language */}
-        <button onClick={() => setLang(l => l === "en" ? "kn" : "en")} style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text2)", padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "inherit" }}>
-          {lang === "en" ? "🇮🇳 ಕನ್ನಡ" : "🇮🇳 English"}
-        </button>
+        <div className="rr-lang-switch" style={{ display: "inline-flex", alignItems: "center", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 3 }}>
+          {[
+            { value: "en", label: "English" },
+            { value: "kn", label: "ಕನ್ನಡ" },
+          ].map(option => (
+            <button
+              key={option.value}
+              onClick={() => setLang(option.value)}
+              style={{
+                background: lang === option.value ? "linear-gradient(135deg, rgba(102,122,47,.16), rgba(200,132,34,.16))" : "transparent",
+                border: "none",
+                color: lang === option.value ? "var(--text)" : "var(--text3)",
+                padding: "6px 10px",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 800,
+                fontFamily: "inherit",
+                minWidth: 74,
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
 
         {/* Notifications */}
         {user && (
@@ -63,7 +85,7 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
               {unread > 0 && <span style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "var(--red)", border: "2px solid #fff" }} />}
             </button>
             {notifOpen && (
-              <div style={{ position: "absolute", top: 46, right: 0, width: 300, background: "#fff", border: "1px solid var(--border)", borderRadius: 14, boxShadow: "var(--shadow-lg)", zIndex: 200, animation: "popIn .17s ease", overflow: "hidden" }}>
+              <div className="rr-notif-panel" style={{ position: "absolute", top: 46, right: 0, width: 300, background: "#fff", border: "1px solid var(--border)", borderRadius: 14, boxShadow: "var(--shadow-lg)", zIndex: 200, animation: "popIn .17s ease", overflow: "hidden" }}>
                 <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
                     {pick(lang, "Notifications", "ಅಧಿಸೂಚನೆಗಳು")} {unread > 0 && <span style={{ background: "var(--red)", color: "#fff", fontSize: 10, padding: "1px 6px", borderRadius: 10, marginLeft: 4 }}>{unread}</span>}
@@ -89,7 +111,7 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
 
         {/* User pill */}
         {user && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--bg)", border: "1px solid var(--border)", padding: "6px 14px 6px 8px", borderRadius: 10 }}>
+          <div className="rr-user-pill" style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--bg)", border: "1px solid var(--border)", padding: "6px 14px 6px 8px", borderRadius: 10 }}>
             <div style={{ width: 28, height: 28, borderRadius: "50%", background: roleColor[user.role], display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>{roleIcon[user.role]}</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", lineHeight: 1.1 }}>{user.name}</div>

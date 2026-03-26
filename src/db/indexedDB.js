@@ -1,6 +1,6 @@
 const DB_NAME = "RaithaReach";
-const DB_VER = 8;
-const VALID_STORES = new Set(["users", "crops", "jobs"]);
+const DB_VER = 10;
+const VALID_STORES = new Set(["users", "crops", "jobs", "requirements", "exports"]);
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 function assertStore(store) {
@@ -14,7 +14,7 @@ function openLocalDB() {
     const request = indexedDB.open(DB_NAME, DB_VER);
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      ["users", "crops", "jobs"].forEach((store) => {
+      ["users", "crops", "jobs", "requirements", "exports"].forEach((store) => {
         if (!db.objectStoreNames.contains(store)) {
           db.createObjectStore(store, { keyPath: "id" });
         }

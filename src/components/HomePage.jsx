@@ -19,63 +19,63 @@ export default function HomePage({ setPage, lang }) {
     : [["✅","Zero registration fee"],["🔒","Secure & private listings"],["📞","Direct farmer contact"],["📊","Daily APMC mandi rates"],["🚛","Farm gate pickup"],["🏆","Built for Karnataka farmers"]];
   const introCards = lang === "kn"
     ? [
-        {icon:"🔥",title:"ಲೈವ್ ಬಿಡ್ ಹರಾಜುಗಳು",desc:"ಖರೀದಿದಾರರು ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ದೊಡ್ಡದರಿಂದ ಚಿಕ್ಕದಾಗಿ ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣಿಸುತ್ತವೆ."},
+        {icon:"🔥",title:"ಲೈವ್ ಬಿಡ್ ಹರಾಜುಗಳು",desc:"ಸಗಟು ಖರೀದಿದಾರರು ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ದೊಡ್ಡದರಿಂದ ಚಿಕ್ಕದಾಗಿ ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣಿಸುತ್ತವೆ."},
         {icon:"📊",title:"ದೈನಂದಿನ ಎಪಿಎಂಸಿ ದರಗಳು",desc:"ಮೈಸೂರು, ಹುಬ್ಬಳ್ಳಿ, ಹಾಸನ ಮತ್ತು ದಾವಣಗೆರೆಯ ಮಾರುಕಟ್ಟೆ ದರಗಳು ದಿನಕ್ಕೊಮ್ಮೆ ನವೀಕರಿಸುತ್ತವೆ, ರೈತರಿಗೆ ಸ್ಥಿರ ಮತ್ತು ನಂಬಿಕಸ್ಥ ಬೆಲೆ ಅರಿವು ಕೊಡುತ್ತವೆ."},
-        {icon:"🚛",title:"ನೇರ ಫಾರ್ಮ್ ಪಿಕಪ್",desc:"ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಫಾರ್ಮ್ ಗೇಟ್‌ಗೆ ಬರುತ್ತಾರೆ. ರೈತರಿಗೆ ಸಾರಿಗೆ ವೆಚ್ಚ ಉಳಿಯುತ್ತದೆ ಮತ್ತು ಉತ್ಪನ್ನವು ಬೇಗ ಖರೀದಿದಾರರಿಗೆ ತಲುಪುತ್ತದೆ."},
+        {icon:"🚛",title:"ನೇರ ಫಾರ್ಮ್ ಪಿಕಪ್",desc:"ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಫಾರ್ಮ್ ಗೇಟ್‌ಗೆ ಬರುತ್ತಾರೆ. ರೈತರಿಗೆ ಸಾರಿಗೆ ವೆಚ್ಚ ಉಳಿಯುತ್ತದೆ ಮತ್ತು ಉತ್ಪನ್ನವು ಬೇಗ ಸಗಟು ಖರೀದಿದಾರರಿಗೆ ತಲುಪುತ್ತದೆ."},
         {icon:"📸",title:"ನಿಜವಾದ ಬೆಳೆ ಫೋಟೋಗಳು",desc:"ಗರಿಷ್ಠ 4 ನಿಜವಾದ ಬೆಳೆ ಫೋಟೋಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ. ನಂಬಿಕೆ ಹೆಚ್ಚಾಗಿ ಉತ್ತಮ ಬಿಡ್‌ಗಳನ್ನು ಪಡೆಯಬಹುದು."},
         {icon:"📍",title:"18+ ಕರ್ನಾಟಕ ಜಿಲ್ಲೆಗಳು",desc:"ಪಿನ್ ಕೋಡ್‌ಗಳೊಂದಿಗೆ ವಿಳಾಸ ಸೂಚನೆ. ನಿಮ್ಮ ಫಾರ್ಮ್ ಸ್ಥಳ ವಿತರಣಾ ಸಹಭಾಗಿಗೆ ಸರಿಯಾಗಿ ತಲುಪುತ್ತದೆ."},
-        {icon:"💾",title:"ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ಕೆಲಸ",desc:"ರೈತರು ಮೊಬೈಲ್‌ನಲ್ಲಿ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ. ಖರೀದಿದಾರರು ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ. ಎಲ್ಲವೂ ಒಟ್ಟಿಗೆ ಸಿಂಕ್ ಆಗುತ್ತದೆ."},
+        {icon:"💾",title:"ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ಕೆಲಸ",desc:"ರೈತರು ಮೊಬೈಲ್‌ನಲ್ಲಿ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ. ಸಗಟು ಖರೀದಿದಾರರು ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ. ಎಲ್ಲವೂ ಒಟ್ಟಿಗೆ ಸಿಂಕ್ ಆಗುತ್ತದೆ."},
       ]
     : [
-        {icon:"🔥",title:"Live Bidding Auctions",desc:"Retailers compete in real-time. Farmer sees every bid ranked from highest to lowest. Accept the best — no pressure, no deadline."},
+        {icon:"🔥",title:"Live Bidding Auctions",desc:"Wholesalers compete in real-time. Farmer sees every bid ranked from highest to lowest. Accept the best — no pressure, no deadline."},
         {icon:"📊",title:"Daily APMC Market Rates",desc:"Karnataka mandi prices from Mysuru, Hubli, Hassan and Davangere stay stable through the day and refresh once daily, so farmers get a believable market reference."},
-        {icon:"🚛",title:"Direct Farm Pickup",desc:"Delivery partners go to the farm gate. Farmers save ₹2,000–5,000 per trip in transport costs. Fresh produce reaches retailers faster."},
-        {icon:"📸",title:"Real Crop Photos",desc:"Upload up to 4 actual crop photos. Retailers inspect quality before bidding — builds trust, increases bid count by 3×."},
+        {icon:"🚛",title:"Direct Farm Pickup",desc:"Delivery partners go to the farm gate. Farmers save ₹2,000–5,000 per trip in transport costs. Fresh produce reaches wholesalers faster."},
+        {icon:"📸",title:"Real Crop Photos",desc:"Upload up to 4 actual crop photos. Wholesalers inspect quality before bidding — builds trust, increases bid count by 3×."},
         {icon:"📍",title:"18+ Karnataka Districts",desc:"Auto-complete addresses with PIN codes for all major Karnataka districts. Delivery gets the exact GPS location of your farm."},
-        {icon:"💾",title:"Works Across All Devices",desc:"Farmer posts on their phone. Retailer bids from their laptop. Delivery updates status on the road. Everything syncs in real time."},
+        {icon:"💾",title:"Works Across All Devices",desc:"Farmer posts on their phone. Wholesaler bids from their laptop. Delivery updates status on the road. Everything syncs in real time."},
       ];
   const howSteps = lang === "kn"
     ? [
         {n:"1",icon:"📸",color:"#e8f5eb",title:"ರೈತರು ಬೆಳೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ",desc:"ಬೆಳೆ ಫೋಟೋ ತೆಗೆದು, ಕನಿಷ್ಠ ಬೆಲೆ ನಿಗದಿ ಮಾಡಿ, ಗ್ರಾಮ ಆಯ್ಕೆ ಮಾಡಿ. ಲಿಸ್ಟಿಂಗ್ ತಕ್ಷಣವೇ ಲೈವ್ ಆಗುತ್ತದೆ.",tag:"2 ನಿಮಿಷ ಸಾಕು",tagBg:"#e8f5eb",tagColor:"#1e6b2e"},
-        {n:"2",icon:"🔥",color:"#fff4e0",title:"ಖರೀದಿದಾರರು ಲೈವ್ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ",desc:"18+ ಜಿಲ್ಲೆಗಳ ಖರೀದಿದಾರರು ನಿಮ್ಮ ಲಿಸ್ಟಿಂಗ್ ನೋಡಿ ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣಿಸುತ್ತವೆ.",tag:"ರಿಯಲ್-ಟೈಮ್ ಹರಾಜು",tagBg:"#fff4e0",tagColor:"#c47000"},
+        {n:"2",icon:"🔥",color:"#fff4e0",title:"ಸಗಟು ಖರೀದಿದಾರರು ಲೈವ್ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ",desc:"18+ ಜಿಲ್ಲೆಗಳ ಸಗಟು ಖರೀದಿದಾರರು ನಿಮ್ಮ ಲಿಸ್ಟಿಂಗ್ ನೋಡಿ ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣಿಸುತ್ತವೆ.",tag:"ರಿಯಲ್-ಟೈಮ್ ಹರಾಜು",tagBg:"#fff4e0",tagColor:"#c47000"},
         {n:"3",icon:"🤝",color:"#e8f5eb",title:"ಉತ್ತಮ ಬಿಡ್ ಸ್ವೀಕರಿಸಿ",desc:"ಎಲ್ಲಾ ಬಿಡ್‌ಗಳನ್ನು ನೋಡಿ. ನಿಮಗೆ ಬೇಕಾದ ಬಿಡ್‌ನ್ನು ಯಾವುದೇ ಒತ್ತಡವಿಲ್ಲದೆ ಸ್ವೀಕರಿಸಿ. ಪಿಕಪ್ ಕಾರ್ಯ ಸ್ವಯಂ ರಚನೆಯಾಗುತ್ತದೆ.",tag:"ನಿಯಂತ್ರಣ ನಿಮ್ಮದು",tagBg:"#e8f5eb",tagColor:"#1e6b2e"},
-        {n:"4",icon:"🚛",color:"#e8f0fe",title:"ಫಾರ್ಮ್ ಗೇಟ್ ಪಿಕಪ್",desc:"ವಿತರಣಾ ಸಹಭಾಗಿ ನಿಮ್ಮ ಫಾರ್ಮ್ ವಿಳಾಸಕ್ಕೆ ಬಂದು ಬೆಳೆ ತೆಗೆದುಕೊಂಡು ಖರೀದಿದಾರರಿಗೆ ತಲುಪಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಹೊರಗೆ ಹೋಗಬೇಕಾಗಿಲ್ಲ.",tag:"ಸಾರಿಗೆ ವೆಚ್ಚ ಶೂನ್ಯ",tagBg:"#e8f0fe",tagColor:"#1565c0"},
+        {n:"4",icon:"🚛",color:"#e8f0fe",title:"ಫಾರ್ಮ್ ಗೇಟ್ ಪಿಕಪ್",desc:"ವಿತರಣಾ ಸಹಭಾಗಿ ನಿಮ್ಮ ಫಾರ್ಮ್ ವಿಳಾಸಕ್ಕೆ ಬಂದು ಬೆಳೆ ತೆಗೆದುಕೊಂಡು ಸಗಟು ಖರೀದಿದಾರರಿಗೆ ತಲುಪಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಹೊರಗೆ ಹೋಗಬೇಕಾಗಿಲ್ಲ.",tag:"ಸಾರಿಗೆ ವೆಚ್ಚ ಶೂನ್ಯ",tagBg:"#e8f0fe",tagColor:"#1565c0"},
       ]
     : [
-        {n:"1",icon:"📸",color:"#e8f5eb",title:"Farmer Posts Crop",desc:"Take photos of your crop, set your minimum price, pick your village from auto-complete. The listing goes live instantly — visible to all retailers.",tag:"Takes 2 minutes",tagBg:"#e8f5eb",tagColor:"#1e6b2e"},
-        {n:"2",icon:"🔥",color:"#fff4e0",title:"Retailers Bid Live",desc:"Retailers from any of 18+ districts see your listing and compete with real-time bids. You see every bid ranked highest to lowest — completely transparent.",tag:"Real-time auction",tagBg:"#fff4e0",tagColor:"#c47000"},
+        {n:"1",icon:"📸",color:"#e8f5eb",title:"Farmer Posts Crop",desc:"Take photos of your crop, set your minimum price, pick your village from auto-complete. The listing goes live instantly — visible to all wholesalers.",tag:"Takes 2 minutes",tagBg:"#e8f5eb",tagColor:"#1e6b2e"},
+        {n:"2",icon:"🔥",color:"#fff4e0",title:"Wholesalers Bid Live",desc:"Wholesalers from any of 18+ districts see your listing and compete with real-time bids. You see every bid ranked highest to lowest — completely transparent.",tag:"Real-time auction",tagBg:"#fff4e0",tagColor:"#c47000"},
         {n:"3",icon:"🤝",color:"#e8f5eb",title:"Accept the Best Bid",desc:"Review all bids. Accept the one you like — there's no pressure or time limit. Deal is locked instantly. A pickup job is created automatically.",tag:"You're in control",tagBg:"#e8f5eb",tagColor:"#1e6b2e"},
-        {n:"4",icon:"🚛",color:"#e8f0fe",title:"Pickup at Farm Gate",desc:"A delivery partner claims the job, drives directly to your farm address, picks up the crop, and delivers it to the retailer. You never leave the farm.",tag:"Zero transport cost",tagBg:"#e8f0fe",tagColor:"#1565c0"},
+        {n:"4",icon:"🚛",color:"#e8f0fe",title:"Pickup at Farm Gate",desc:"A delivery partner claims the job, drives directly to your farm address, picks up the crop, and delivers it to the wholesaler. You never leave the farm.",tag:"Zero transport cost",tagBg:"#e8f0fe",tagColor:"#1565c0"},
       ];
   const flowCards = lang === "kn"
     ? {
-        farmer: { badge:"🧑‍🌾 ರೈತ", role:"ಹಂತ 1 — ಮಾರಾಟಗಾರ", title:"ರೈತ ಪೋಸ್ಟ್ ಮಾಡಿ ಗೆಲ್ಲುತ್ತಾರೆ", desc:"ಬೆಳೆ ಫೋಟೋಗಳು ಮತ್ತು ಕನಿಷ್ಠ ಬೆಲೆಯೊಂದಿಗೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ. ಮನೆಯಲ್ಲೇ ಕುಳಿತು ಖರೀದಿದಾರರ ಸ್ಪರ್ಧೆ ನೋಡುತ್ತಾರೆ. ಅತ್ಯುತ್ತಮ ಬಿಡ್ ಸ್ವೀಕರಿಸುತ್ತಾರೆ.", points:["2 ನಿಮಿಷದಲ್ಲಿ ಬೆಳೆ ಫೋಟೋ ಅಪ್‌ಲೋಡ್","ಕನಿಷ್ಠ ಬಿಡ್ ನೀವು ನಿಗದಿ ಮಾಡಿ","ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ಲೈವ್ ಆಗಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ","ನಿಮಗೆ ಇಷ್ಟವಾದ ಆಫರ್ ಯಾವಾಗ ಬೇಕಾದರೂ ಸ್ವೀಕರಿಸಿ"]},
-        retailer: { badge:"🏪 ಖರೀದಿದಾರ", role:"ಹಂತ 2 — ಖರೀದಿದಾರ", title:"ಖರೀದಿದಾರರು ಬಿಡ್ ಮಾಡಿ ಖರೀದಿಸುತ್ತಾರೆ", desc:"ಕರ್ನಾಟಕದಾದ್ಯಂತದ ತಾಜಾ ಲಿಸ್ಟಿಂಗ್‌ಗಳನ್ನು ನೋಡುತ್ತಾರೆ. ಲೈವ್ ಹರಾಜಿನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ಫಾರ್ಮ್‌ನಿಂದ ನೇರವಾಗಿ ತಾಜಾ ಉತ್ಪನ್ನ ಪಡೆಯುತ್ತಾರೆ.", points:["ಒಂದು ಪರದೆಯಲ್ಲಿ 18+ ಜಿಲ್ಲೆಗಳನ್ನು ನೋಡಿ","ಎಪಿಎಂಸಿ ದರಗಳೊಂದಿಗೆ ಹೋಲಿಸಿ","ಲೈವ್ ಸ್ಪರ್ಧೆಯಲ್ಲಿ ಉತ್ತಮ ಬೆಲೆ ಗೆಲ್ಲುತ್ತದೆ","ಫಾರ್ಮ್‌ನಿಂದ ನೇರ ಉತ್ಪನ್ನ ಪಡೆಯಿರಿ"]},
-        delivery: { badge:"🚛 ವಿತರಣೆ", role:"ಹಂತ 3 — ಸೇತುವೆ", title:"ಡ್ರೈವರ್ ತೆಗೆದುಕೊಂಡು ತಲುಪಿಸುತ್ತಾರೆ", desc:"ಪಿಕಪ್ ಕಾರ್ಯವನ್ನು ಸ್ವೀಕರಿಸಿ. ಖಚಿತ ವಿಳಾಸ ಮತ್ತು PIN ಬಳಸಿ ಫಾರ್ಮ್‌ಗೆ ಹೋಗಿ. ಬೆಳೆಯನ್ನು ನೇರವಾಗಿ ಖರೀದಿದಾರರಿಗೆ ತಲುಪಿಸಿ.", points:["ನಿಮ್ಮ ಹತ್ತಿರದ ಎಲ್ಲಾ ಕಾರ್ಯಗಳನ್ನು ನೋಡಿ","ಒಂದು ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಮಾರ್ಗ ಸ್ವೀಕರಿಸಿ","ಖಚಿತ ಫಾರ್ಮ್ ವಿಳಾಸ ಮತ್ತು PIN ಪಡೆಯಿರಿ","ಸ್ಥಿತಿಯನ್ನು ಲೈವ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"]},
+        farmer: { badge:"🧑‍🌾 ರೈತ", role:"ಹಂತ 1 — ಮಾರಾಟಗಾರ", title:"ರೈತ ಪೋಸ್ಟ್ ಮಾಡಿ ಗೆಲ್ಲುತ್ತಾರೆ", desc:"ಬೆಳೆ ಫೋಟೋಗಳು ಮತ್ತು ಕನಿಷ್ಠ ಬೆಲೆಯೊಂದಿಗೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ. ಮನೆಯಲ್ಲೇ ಕುಳಿತು ಸಗಟು ಖರೀದಿದಾರರ ಸ್ಪರ್ಧೆ ನೋಡುತ್ತಾರೆ. ಅತ್ಯುತ್ತಮ ಬಿಡ್ ಸ್ವೀಕರಿಸುತ್ತಾರೆ.", points:["2 ನಿಮಿಷದಲ್ಲಿ ಬೆಳೆ ಫೋಟೋ ಅಪ್‌ಲೋಡ್","ಕನಿಷ್ಠ ಬಿಡ್ ನೀವು ನಿಗದಿ ಮಾಡಿ","ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ಲೈವ್ ಆಗಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ","ನಿಮಗೆ ಇಷ್ಟವಾದ ಆಫರ್ ಯಾವಾಗ ಬೇಕಾದರೂ ಸ್ವೀಕರಿಸಿ"]},
+        retailer: { badge:"🏪 ಸಗಟು", role:"ಹಂತ 2 — ಸಗಟು ಖರೀದಿದಾರ", title:"ಸಗಟು ಖರೀದಿದಾರರು ಬಿಡ್ ಮಾಡಿ ಖರೀದಿಸುತ್ತಾರೆ", desc:"ಕರ್ನಾಟಕದಾದ್ಯಂತದ ತಾಜಾ ಲಿಸ್ಟಿಂಗ್‌ಗಳನ್ನು ನೋಡುತ್ತಾರೆ. ಲೈವ್ ಹರಾಜಿನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ಫಾರ್ಮ್‌ನಿಂದ ನೇರವಾಗಿ ತಾಜಾ ಉತ್ಪನ್ನ ಪಡೆಯುತ್ತಾರೆ.", points:["ಒಂದು ಪರದೆಯಲ್ಲಿ 18+ ಜಿಲ್ಲೆಗಳನ್ನು ನೋಡಿ","ಎಪಿಎಂಸಿ ದರಗಳೊಂದಿಗೆ ಹೋಲಿಸಿ","ಲೈವ್ ಸ್ಪರ್ಧೆಯಲ್ಲಿ ಉತ್ತಮ ಬೆಲೆ ಗೆಲ್ಲುತ್ತದೆ","ಫಾರ್ಮ್‌ನಿಂದ ನೇರ ಉತ್ಪನ್ನ ಪಡೆಯಿರಿ"]},
+        delivery: { badge:"🚛 ವಿತರಣೆ", role:"ಹಂತ 3 — ಸೇತುವೆ", title:"ಡ್ರೈವರ್ ತೆಗೆದುಕೊಂಡು ತಲುಪಿಸುತ್ತಾರೆ", desc:"ಪಿಕಪ್ ಕಾರ್ಯವನ್ನು ಸ್ವೀಕರಿಸಿ. ಖಚಿತ ವಿಳಾಸ ಮತ್ತು PIN ಬಳಸಿ ಫಾರ್ಮ್‌ಗೆ ಹೋಗಿ. ಬೆಳೆಯನ್ನು ನೇರವಾಗಿ ಸಗಟು ಖರೀದಿದಾರರಿಗೆ ತಲುಪಿಸಿ.", points:["ನಿಮ್ಮ ಹತ್ತಿರದ ಎಲ್ಲಾ ಕಾರ್ಯಗಳನ್ನು ನೋಡಿ","ಒಂದು ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಮಾರ್ಗ ಸ್ವೀಕರಿಸಿ","ಖಚಿತ ಫಾರ್ಮ್ ವಿಳಾಸ ಮತ್ತು PIN ಪಡೆಯಿರಿ","ಸ್ಥಿತಿಯನ್ನು ಲೈವ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"]},
         arrow1:"ಲೈವ್ ಹರಾಜು",
         arrow2:"ಕಾರ್ಯ ರಚನೆ",
         connector:"ಮೂರು ಪಾತ್ರಗಳೂ BroadcastChannel API ಮೂಲಕ ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸಿಂಕ್ ಆಗುತ್ತವೆ — ಒಂದು ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಮಾಡಿದ ಬಿಡ್ ಉಳಿದ ಎಲ್ಲಾ ಟ್ಯಾಬ್‌ಗಳಲ್ಲಿ ತಕ್ಷಣ ಕಾಣಿಸುತ್ತದೆ",
       }
     : {
-        farmer: { badge:"🧑‍🌾 FARMER", role:"Step 1 — The Seller", title:"Farmer Posts & Wins", desc:"Posts crop with photos and minimum price. Sits at home while retailers compete. Accepts the highest bid.", points:["Upload crop photos in 2 minutes","Set minimum bid — you control the floor","See all bids ranked live","Accept the best offer, anytime"]},
-        retailer: { badge:"🏪 RETAILER", role:"Step 2 — The Buyer", title:"Retailer Bids & Buys", desc:"Browses fresh listings from across Karnataka. Bids in live auctions. Gets farm-fresh produce at the best price.", points:["Browse 18+ districts from one screen","Compare bids against APMC mandi rates","Compete live — best price wins","Receive fresh produce direct from farm"]},
-        delivery: { badge:"🚛 DELIVERY", role:"Step 3 — The Bridge", title:"Driver Picks Up & Delivers", desc:"Claims the pickup job. Drives to the farm with exact address and PIN code. Delivers crop directly to the retailer.", points:["See all available jobs near you","Claim a route with one click","Get exact farm address & PIN code","Update status live — everyone sees"]},
+        farmer: { badge:"🧑‍🌾 FARMER", role:"Step 1 — The Seller", title:"Farmer Posts & Wins", desc:"Posts crop with photos and minimum price. Sits at home while wholesalers compete. Accepts the highest bid.", points:["Upload crop photos in 2 minutes","Set minimum bid — you control the floor","See all bids ranked live","Accept the best offer, anytime"]},
+        retailer: { badge:"🏪 WHOLESALER", role:"Step 2 — The Buyer", title:"Wholesaler Bids & Buys", desc:"Browses fresh listings from across Karnataka. Bids in live auctions. Gets farm-fresh produce at the best price.", points:["Browse 18+ districts from one screen","Compare bids against APMC mandi rates","Compete live — best price wins","Receive fresh produce direct from farm"]},
+        delivery: { badge:"🚛 DELIVERY", role:"Step 3 — The Bridge", title:"Driver Picks Up & Delivers", desc:"Claims the pickup job. Drives to the farm with exact address and PIN code. Delivers crop directly to the wholesaler.", points:["See all available jobs near you","Claim a route with one click","Get exact farm address & PIN code","Update status live — everyone sees"]},
         arrow1:"Live Auction",
         arrow2:"Job Created",
         connector:"All three roles sync in real time using BroadcastChannel API — bid placed in one tab appears instantly in all others",
       };
   const whyPoints = lang === "kn"
     ? [
-        {icon:"💰",title:"ನಿಮ್ಮ ಮಾರಾಟದ 100% ಹಣ ಉಳಿಸಿ",desc:"ನಾವು ಯಾವುದೇ ಕಮಿಷನ್ ವಸೂಲು ಮಾಡುವುದಿಲ್ಲ. ಖರೀದಿದಾರರು ಕೊಡುವ ಹಣದ ಪೂರ್ಣ ಮೊತ್ತವೂ ರೈತರಿಗೆ ಹೋಗುತ್ತದೆ."},
+        {icon:"💰",title:"ನಿಮ್ಮ ಮಾರಾಟದ 100% ಹಣ ಉಳಿಸಿ",desc:"ನಾವು ಯಾವುದೇ ಕಮಿಷನ್ ವಸೂಲು ಮಾಡುವುದಿಲ್ಲ. ಸಗಟು ಖರೀದಿದಾರರು ಕೊಡುವ ಹಣದ ಪೂರ್ಣ ಮೊತ್ತವೂ ರೈತರಿಗೆ ಹೋಗುತ್ತದೆ."},
         {icon:"📍",title:"ಫಾರ್ಮ್ ಬಿಟ್ಟು ಹೊರಡುವ ಅಗತ್ಯವಿಲ್ಲ",desc:"ಬೆಳಗಿನ ಜಾವ ಮಂಡಿಗೆ ಹೋಗುವ ಅವಶ್ಯಕತೆ ಇಲ್ಲ. ಫೋನ್‌ನಿಂದ ಪೋಸ್ಟ್ ಮಾಡಿ, ಮನೆಯಿಂದಲೇ ಬಿಡ್ ಸ್ವೀಕರಿಸಿ."},
         {icon:"🔒",title:"ಪ್ರತಿ ಬಾರಿ ಸಂಪೂರ್ಣ ಪಾರದರ್ಶಕತೆ",desc:"ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ನಿಮಗೆ ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣುತ್ತವೆ. ಏಜೆಂಟ್ ಹೇಳುವುದನ್ನು ನಂಬಬೇಕಾದ ಅವಶ್ಯಕತೆ ಇಲ್ಲ."},
-        {icon:"📞",title:"ಖರೀದಿದಾರರೊಂದಿಗೆ ನೇರ ಸಂಪರ್ಕ",desc:"ಪ್ರತಿ ಖರೀದಿದಾರರ ಫೋನ್ ಸಂಖ್ಯೆ ಕಾಣಿಸುತ್ತದೆ. ನೇರವಾಗಿ ಮಾತನಾಡಿ. ಅಡಗಿದ ಶುಲ್ಕಗಳಿಲ್ಲ."},
+        {icon:"📞",title:"ಸಗಟು ಖರೀದಿದಾರರೊಂದಿಗೆ ನೇರ ಸಂಪರ್ಕ",desc:"ಪ್ರತಿ ಸಗಟು ಖರೀದಿದಾರರ ಫೋನ್ ಸಂಖ್ಯೆ ಕಾಣಿಸುತ್ತದೆ. ನೇರವಾಗಿ ಮಾತನಾಡಿ. ಅಡಗಿದ ಶುಲ್ಕಗಳಿಲ್ಲ."},
       ]
     : [
-        {icon:"💰",title:"Keep 100% of your sale price",desc:"We charge zero commission. Ever. The price the retailer pays goes directly to you, nothing skimmed off the top."},
+        {icon:"💰",title:"Keep 100% of your sale price",desc:"We charge zero commission. Ever. The price the wholesaler pays goes directly to you, nothing skimmed off the top."},
         {icon:"📍",title:"Never leave your farm",desc:"No more 4AM mandi trips. Post from your phone, accept bids from home, let the delivery partner come to you."},
         {icon:"🔒",title:"Full transparency, every time",desc:"Every bid is visible to you, ranked from highest to lowest. No agent telling you what the market says — you see it yourself."},
-        {icon:"📞",title:"Direct contact with buyers",desc:"Every retailer's phone number is shown. Call them directly. No mysterious agents. No hidden fees. Real people, real deals."},
+        {icon:"📞",title:"Direct contact with buyers",desc:"Every wholesaler's phone number is shown. Call them directly. No mysterious agents. No hidden fees. Real people, real deals."},
       ];
   const statBlocks = lang === "kn"
     ? [["35L+","ಕರ್ನಾಟಕದ ರೈತರು","ಕರ್ನಾಟಕದಲ್ಲೇ ಸಾಧ್ಯ ಬಳಕೆದಾರರು"],["₹0","ಕಮಿಷನ್ ವಸೂಲಿ","ಪ್ರಾರಂಭದಲ್ಲೂ ನಂತರವೂ ಶುಲ್ಕ ಇಲ್ಲ"],["18+","ವ್ಯಾಪ್ತಿಯ ಜಿಲ್ಲೆಗಳು","ಹಾಸನದಿಂದ ಬೀದರ್‌ವರೆಗೆ ಪ್ರಮುಖ ಜಿಲ್ಲೆಗಳು"],["ದಿನಕ್ಕೆ 1 ಬಾರಿ","ದರ ನವೀಕರಣ","ಎಪಿಎಂಸಿ ದರಗಳು ದಿನಕ್ಕೊಮ್ಮೆ ನವೀಕರಿಸುತ್ತವೆ"]]
@@ -83,12 +83,12 @@ export default function HomePage({ setPage, lang }) {
   const testimonials = lang === "kn"
     ? [
         {stars:"★★★★★",quote:"ಹಿಂದೆ ನಾನು ಬೆಳಗಿನ 4 ಗಂಟೆಗೆ ಮಂಡಿಗೆ ಹೋಗಿ ಏಜೆಂಟ್ ಹೇಳಿದ ದರವೇ ನಂಬಬೇಕಾಗುತ್ತಿತ್ತು. ಈಗ ಮನೆಯಿಂದಲೇ ಪೋಸ್ಟ್ ಮಾಡಿ ಒಂದೇ ಗಂಟೆಯಲ್ಲಿ 3–4 ಬಿಡ್‌ಗಳು ಬರುತ್ತವೆ. ನನ್ನ ಕೊನೆಯ ಟೊಮೆಟೊ ಬ್ಯಾಚ್‌ನಲ್ಲಿ ₹3,200 ಹೆಚ್ಚು ಸಂಪಾದಿಸಿದೆ.",name:"ರಾಜು ಹೆಗ್ಡೆ",role:"ರೈತ · ಹಾಸನ ಜಿಲ್ಲೆ",emoji:"🧑‍🌾",bg:"#e8f5eb"},
-        {stars:"★★★★★",quote:"ಹಿಂದೆ ನಾನು ಮಧ್ಯವರಿಂದ ಖರೀದಿಸುತ್ತಿದ್ದೆ. ಈಗ ರೈತನ ಮುಖ, ಗ್ರಾಮ ಮತ್ತು ಫೋಟೋಗಳನ್ನೇ ನೋಡಬಹುದು. ಗುಣಮಟ್ಟ ಉತ್ತಮವಾಗಿದೆ ಮತ್ತು ನಂಬಿಕೆ ಹೆಚ್ಚಾಗಿದೆ.",name:"ಮೀನಾ ಪಾಟೀಲ್",role:"ಖರೀದಿದಾರ · ಮೈಸೂರು",emoji:"🏪",bg:"#fff4e0"},
+        {stars:"★★★★★",quote:"ಹಿಂದೆ ನಾನು ಮಧ್ಯವರಿಂದ ಖರೀದಿಸುತ್ತಿದ್ದೆ. ಈಗ ರೈತನ ಮುಖ, ಗ್ರಾಮ ಮತ್ತು ಫೋಟೋಗಳನ್ನೇ ನೋಡಬಹುದು. ಗುಣಮಟ್ಟ ಉತ್ತಮವಾಗಿದೆ ಮತ್ತು ನಂಬಿಕೆ ಹೆಚ್ಚಾಗಿದೆ.",name:"ಮೀನಾ ಪಾಟೀಲ್",role:"ಸಗಟು ಖರೀದಿದಾರ · ಮೈಸೂರು",emoji:"🏪",bg:"#fff4e0"},
         {stars:"★★★★★",quote:"ನಾನು ದಿನಕ್ಕೆ 3–4 ಪಿಕಪ್ ಮಾರ್ಗಗಳನ್ನು ಮಾಡುತ್ತೇನೆ. ಅಪ್ಲಿಕೇಶನ್ ಖಚಿತ ಫಾರ್ಮ್ ವಿಳಾಸ ಮತ್ತು PIN ಕೊಡುತ್ತದೆ, ಆದ್ದರಿಂದ ದಾರಿ ತಪ್ಪುವುದಿಲ್ಲ. ವಿತರಣೆಗೆ ಆದಾಯ ಚೆನ್ನಾಗಿದೆ.",name:"ಸುರೇಶ್ ಕುಮಾರ್",role:"ವಿತರಣಾ ಸಹಭಾಗಿ · ತುಮಕೂರು",emoji:"🚛",bg:"#e8f0fe"},
       ]
     : [
         {stars:"★★★★★",quote:"Earlier I had to go to the mandi at 4AM and trust whatever price the agent said. Now I post from home and get 3–4 bids within an hour. I earned ₹3,200 more on my last Tomato batch alone.",name:"Raju Hegde",role:"Farmer · Hassan district",emoji:"🧑‍🌾",bg:"#e8f5eb"},
-        {stars:"★★★★★",quote:"I used to buy from commission agents who never told me where the crop actually came from. On Raitha Reach I can see the farmer's face, their village, their photos. The quality is so much better and I know it's honest.",name:"Meena Patil",role:"Retailer · Mysuru",emoji:"🏪",bg:"#fff4e0"},
+        {stars:"★★★★★",quote:"I used to buy from commission agents who never told me where the crop actually came from. On Raitha Reach I can see the farmer's face, their village, their photos. The quality is so much better and I know it's honest.",name:"Meena Patil",role:"Wholesaler · Mysuru",emoji:"🏪",bg:"#fff4e0"},
         {stars:"★★★★★",quote:"I do 3–4 pickup routes a day. The app gives me the exact farm address with PIN code, so I never get lost. I earn per delivery and the work is steady. Never had this kind of income before.",name:"Suresh Kumar",role:"Delivery Partner · Tumkur",emoji:"🚛",bg:"#e8f0fe"},
       ];
   const footerDistricts = ["Hassan","Mysuru","Mandya","Shivamogga","Davangere","Hubli-Dharwad"];
@@ -448,7 +448,7 @@ export default function HomePage({ setPage, lang }) {
             {pick(lang, "No Middlemen.", "ಮಧ್ಯವರಿಲ್ಲ.")}
           </h1>
           <p className="hp-hero-sub">
-            {pick(lang, "Raitha Reach connects Karnataka farmers directly with retailers through live auctions. Post your crop, receive competitive bids, get picked up at your farm gate.", "ರೈತ ರೀಚ್ ಕರ್ನಾಟಕದ ರೈತರನ್ನು ಲೈವ್ ಹರಾಜುಗಳ ಮೂಲಕ ಖರೀದಿದಾರರೊಂದಿಗೆ ನೇರವಾಗಿ ಸಂಪರ್ಕಿಸುತ್ತದೆ. ನಿಮ್ಮ ಬೆಳೆಯನ್ನು ಪೋಸ್ಟ್ ಮಾಡಿ, ಸ್ಪರ್ಧಾತ್ಮಕ ಬಿಡ್ ಪಡೆಯಿರಿ, ಫಾರ್ಮ್ ಗೇಟ್‌ನಲ್ಲೇ ಪಿಕಪ್ ಪಡೆಯಿರಿ.")}
+            {pick(lang, "Raitha Reach connects Karnataka farmers directly with wholesalers through live auctions. Post your crop, receive competitive bids, get picked up at your farm gate.", "ರೈತ ರೀಚ್ ಕರ್ನಾಟಕದ ರೈತರನ್ನು ಲೈವ್ ಹರಾಜುಗಳ ಮೂಲಕ ಸಗಟು ಖರೀದಿದಾರರೊಂದಿಗೆ ನೇರವಾಗಿ ಸಂಪರ್ಕಿಸುತ್ತದೆ. ನಿಮ್ಮ ಬೆಳೆಯನ್ನು ಪೋಸ್ಟ್ ಮಾಡಿ, ಸ್ಪರ್ಧಾತ್ಮಕ ಬಿಡ್ ಪಡೆಯಿರಿ, ಫಾರ್ಮ್ ಗೇಟ್‌ನಲ್ಲೇ ಪಿಕಪ್ ಪಡೆಯಿರಿ.")}
           </p>
           <div className="hp-hero-cta">
             <button className="hp-cta-primary" onClick={() => setPage("auth")}>
@@ -484,7 +484,7 @@ export default function HomePage({ setPage, lang }) {
           <div className="hp-section-label">{pick(lang, "Why Raitha Reach", "ಯಾಕೆ ರೈತ ರೀಚ್")}</div>
           <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",flexWrap:"wrap",gap:16}}>
             <h2 className="hp-section-title">{pick(lang, <>Built for Karnataka's<br />farming community</>, <>ಕರ್ನಾಟಕದ ರೈತ<br />ಸಮುದಾಯಕ್ಕಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ</>)}</h2>
-            <p className="hp-section-sub" style={{marginBottom:4}}>{pick(lang, "Every feature designed around what farmers, retailers and delivery partners actually need — not what looks good on paper.", "ಪ್ರತಿ ವೈಶಿಷ್ಟ್ಯವೂ ರೈತರು, ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳಿಗೆ ನಿಜವಾಗಿಯೂ ಬೇಕಾಗಿರುವುದರ ಆಧಾರದಲ್ಲಿ ನಿರ್ಮಿಸಲಾಗಿದೆ.")}</p>
+            <p className="hp-section-sub" style={{marginBottom:4}}>{pick(lang, "Every feature designed around what farmers, wholesalers and delivery partners actually need — not what looks good on paper.", "ಪ್ರತಿ ವೈಶಿಷ್ಟ್ಯವೂ ರೈತರು, ಸಗಟು ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳಿಗೆ ನಿಜವಾಗಿಯೂ ಬೇಕಾಗಿರುವುದರ ಆಧಾರದಲ್ಲಿ ನಿರ್ಮಿಸಲಾಗಿದೆ.")}</p>
           </div>
           <div className="hp-intro-grid">
             {introCards.map(f => (
@@ -533,7 +533,7 @@ export default function HomePage({ setPage, lang }) {
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div className="hp-flow-header">
             <div className="hp-section-label">{pick(lang, "The Full Journey", "ಸಂಪೂರ್ಣ ಪ್ರಯಾಣ")}</div>
-            <h2 className="hp-section-title">{pick(lang, <>Farmer bids to Retailer.<br />Delivery picks it up.</>, <>ರೈತರಿಂದ ಖರೀದಿದಾರರಿಗೆ.<br />ವಿತರಣೆಯೂ ಒಂದೇ ವೇದಿಕೆಯಲ್ಲಿ.</>)}</h2>
+            <h2 className="hp-section-title">{pick(lang, <>Farmer sells to Wholesaler.<br />Delivery picks it up.</>, <>ರೈತರಿಂದ ಸಗಟು ಖರೀದಿದಾರರಿಗೆ.<br />ವಿತರಣೆಯೂ ಒಂದೇ ವೇದಿಕೆಯಲ್ಲಿ.</>)}</h2>
             <p className="hp-section-sub" style={{margin:"0 auto"}}>{pick(lang, "Three roles. One seamless platform. Everything connected in real time.", "ಮೂರು ಪಾತ್ರಗಳು. ಒಂದು ನಿರಂತರ ವೇದಿಕೆ. ಎಲ್ಲವೂ ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸಂಪರ್ಕಿತವಾಗಿದೆ.")}</p>
           </div>
           <div className="hp-flow-grid">
@@ -571,7 +571,7 @@ export default function HomePage({ setPage, lang }) {
             {/* RETAILER CARD */}
             <div className="hp-flow-card">
               <div className="hp-flow-card-img">
-                <img src={FARM_IMG2} alt={pick(lang, "Retailer", "ಖರೀದಿದಾರ")} loading="lazy" />
+                <img src={FARM_IMG2} alt={pick(lang, "Wholesaler", "ಸಗಟು ಖರೀದಿದಾರ")} loading="lazy" />
                 <div className="hp-flow-card-badge" style={{background:"#c47000"}}>{flowCards.retailer.badge}</div>
               </div>
               <div className="hp-flow-card-body">
@@ -684,7 +684,7 @@ export default function HomePage({ setPage, lang }) {
           <div className="hp-testi-header">
             <div className="hp-section-label">{pick(lang, "User Stories", "ಬಳಕೆದಾರರ ಕಥೆಗಳು")}</div>
             <h2 className="hp-section-title">{pick(lang, "What Karnataka farmers say", "ಕರ್ನಾಟಕದ ರೈತರು ಏನು ಹೇಳುತ್ತಾರೆ")}</h2>
-            <p className="hp-section-sub">{pick(lang, "Real stories from farmers, retailers and delivery partners across Karnataka.", "ಕರ್ನಾಟಕದಾದ್ಯಂತದ ರೈತರು, ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳ ನಿಜವಾದ ಕಥೆಗಳು.")}</p>
+            <p className="hp-section-sub">{pick(lang, "Real stories from farmers, wholesalers and delivery partners across Karnataka.", "ಕರ್ನಾಟಕದಾದ್ಯಂತದ ರೈತರು, ಸಗಟು ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳ ನಿಜವಾದ ಕಥೆಗಳು.")}</p>
           </div>
           <div className="hp-testi-grid">
             {testimonials.map(t => (
@@ -708,7 +708,7 @@ export default function HomePage({ setPage, lang }) {
       <section className="hp-cta-section">
         <div className="hp-cta-emoji">🌾</div>
         <h2 className="hp-cta-title">{pick(lang, <>Ready to sell your crop<br />at the right price?</>, <>ನಿಮ್ಮ ಬೆಳೆಯನ್ನು ಸರಿಯಾದ<br />ದರದಲ್ಲಿ ಮಾರಾಟ ಮಾಡಲು ಸಿದ್ಧವೇ?</>)}</h2>
-        <p className="hp-cta-sub">{pick(lang, "Join farmers across Karnataka who are getting fair prices directly from buyers — no middlemen, no commission, no mandi trip.", "ಖರೀದಿದಾರರಿಂದಲೇ ನ್ಯಾಯ ಬೆಲೆ ಪಡೆಯುತ್ತಿರುವ ಕರ್ನಾಟಕದ ರೈತರ ಜೊತೆ ಸೇರಿ — ಮಧ್ಯವರಿಲ್ಲ, ಕಮಿಷನ್ ಇಲ್ಲ, ಮಂಡಿ ಪ್ರಯಾಣ ಇಲ್ಲ.")}</p>
+        <p className="hp-cta-sub">{pick(lang, "Join farmers across Karnataka who are getting fair prices directly from wholesalers — no middlemen, no commission, no mandi trip.", "ಸಗಟು ಖರೀದಿದಾರರಿಂದಲೇ ನ್ಯಾಯ ಬೆಲೆ ಪಡೆಯುತ್ತಿರುವ ಕರ್ನಾಟಕದ ರೈತರ ಜೊತೆ ಸೇರಿ — ಮಧ್ಯವರಿಲ್ಲ, ಕಮಿಷನ್ ಇಲ್ಲ, ಮಂಡಿ ಪ್ರಯಾಣ ಇಲ್ಲ.")}</p>
         <div className="hp-cta-btns">
           <button className="hp-cta-btn1" onClick={() => setPage("auth")}>{pick(lang, "🚀 Register Free — It Takes 1 Minute", "🚀 ಉಚಿತ ನೋಂದಣಿ — 1 ನಿಮಿಷ ಸಾಕು")}</button>
           <button className="hp-cta-btn2" onClick={() => setPage("about")}>{pick(lang, "See All Features →", "ಎಲ್ಲ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ನೋಡಿ →")}</button>
@@ -724,11 +724,11 @@ export default function HomePage({ setPage, lang }) {
                 <div className="hp-footer-logo-icon">🌿</div>
                 <div className="hp-footer-logo-text">Raitha Reach</div>
               </div>
-              <div className="hp-footer-desc">{pick(lang, "Karnataka's farm-direct auction platform. Connecting farmers, retailers and delivery partners — removing every middleman in between.", "ಕರ್ನಾಟಕದ ಕೃಷಿ ನೇರ ಹರಾಜು ವೇದಿಕೆ. ರೈತರು, ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ ಮಧ್ಯವರಿಯನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ.")}</div>
+              <div className="hp-footer-desc">{pick(lang, "Karnataka's farm-direct auction platform. Connecting farmers, wholesalers and delivery partners — removing every middleman in between.", "ಕರ್ನಾಟಕದ ಕೃಷಿ ನೇರ ಹರಾಜು ವೇದಿಕೆ. ರೈತರು, ಸಗಟು ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ ಮಧ್ಯವರಿಯನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ.")}</div>
             </div>
             <div>
               <div className="hp-footer-col-title">{pick(lang, "Platform", "ವೇದಿಕೆ")}</div>
-              {(lang === "kn" ? ["ರೈತರಿಗೆ","ಖರೀದಿದಾರರಿಗೆ","ವಿತರಣಾ ಸಹಭಾಗಿಗಳಿಗೆ","ಎಪಿಎಂಸಿ ದರಗಳು","ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ"] : ["For Farmers","For Retailers","For Delivery Partners","APMC Market Rates","How It Works"]).map(l => <div key={l} className="hp-footer-link" onClick={() => setPage("auth")}>{l}</div>)}
+              {(lang === "kn" ? ["ರೈತರಿಗೆ","ಸಗಟು ಖರೀದಿದಾರರಿಗೆ","ವಿತರಣಾ ಸಹಭಾಗಿಗಳಿಗೆ","ಎಪಿಎಂಸಿ ದರಗಳು","ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ"] : ["For Farmers","For Wholesalers","For Delivery Partners","APMC Market Rates","How It Works"]).map(l => <div key={l} className="hp-footer-link" onClick={() => setPage("auth")}>{l}</div>)}
             </div>
             <div>
               <div className="hp-footer-col-title">{pick(lang, "Karnataka Districts", "ಕರ್ನಾಟಕ ಜಿಲ್ಲೆಗಳು")}</div>

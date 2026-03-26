@@ -3,8 +3,8 @@ import { pick, tCrop } from "../i18n.js";
 export default function Ticker({rates,lang}){
   const items=rates.slice(0,16);const doubled=[...items,...items];
   return(
-    <div style={{background:"linear-gradient(90deg,#667a2f 0%, #c88422 52%, #9a5523 100%)",overflow:"hidden",height:36,display:"flex",alignItems:"center"}}>
-      <div style={{background:"rgba(43,30,15,.24)",color:"#fff8eb",padding:"0 14px",fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,whiteSpace:"nowrap",height:"100%",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+    <div className="rr-ticker" style={{background:"linear-gradient(90deg,#667a2f 0%, #c88422 52%, #9a5523 100%)",overflow:"hidden",height:36,display:"flex",alignItems:"center"}}>
+      <div className="rr-ticker-label" style={{background:"rgba(43,30,15,.24)",color:"#fff8eb",padding:"0 14px",fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,whiteSpace:"nowrap",height:"100%",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
         {pick(lang,"📊 TODAY'S APMC","📊 ಇಂದಿನ ಎಪಿಎಂಸಿ")}
       </div>
       <div style={{overflow:"hidden",flex:1}}>

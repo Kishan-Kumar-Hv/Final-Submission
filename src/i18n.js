@@ -84,7 +84,7 @@ const categoryMap = {
 
 const roleMap = {
   farmer: { en: "Farmer", kn: "ರೈತ" },
-  retailer: { en: "Retailer", kn: "ಖರೀದಿದಾರ" },
+  retailer: { en: "Wholesaler", kn: "ಸಗಟು ಖರೀದಿದಾರ" },
   delivery: { en: "Delivery Partner", kn: "ವಿತರಣಾ ಸಹಭಾಗಿ" },
 };
 
@@ -93,7 +93,7 @@ const statusMap = {
     open: "Open",
     bidding: "🔥 Bidding",
     booked: "Booked",
-    "awaiting-retailer": "Awaiting Retailer",
+    "awaiting-retailer": "Awaiting Wholesaler",
     confirmed: "Confirmed",
     scheduled: "Scheduled",
     "on-the-way": "🚛 On the Way",
@@ -104,7 +104,7 @@ const statusMap = {
     open: "ತೆರೆದಿದೆ",
     bidding: "🔥 ಹರಾಜು",
     booked: "ಬುಕ್ ಆಗಿದೆ",
-    "awaiting-retailer": "ಖರೀದಿದಾರರ ದೃಢೀಕರಣ ಬಾಕಿ",
+    "awaiting-retailer": "ಸಗಟು ಖರೀದಿದಾರರ ದೃಢೀಕರಣ ಬಾಕಿ",
     confirmed: "ದೃಢೀಕರಿಸಲಾಗಿದೆ",
     scheduled: "ನಿಗದಿಯಾಗಿದೆ",
     "on-the-way": "🚛 ಮಾರ್ಗದಲ್ಲಿ",

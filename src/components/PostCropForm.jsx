@@ -91,7 +91,7 @@ async function fileToListingDataUrl(file, { maxSide = 1600, quality = 0.82 } = {
   }
 }
 
-export default function PostCropForm({ user, rates, onPost, onCancel }) {
+export default function PostCropForm({ user, rates, onPost, onCancel, lang = "en" }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     cropName: "",
@@ -315,6 +315,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
         summary: payload.summary,
         visibleFeatures: payload.visibleFeatures || [],
         scanPath: payload.scanPath || "primary",
+        provider: payload.provider || "",
         model: payload.model || "",
       });
       setErr("");
@@ -480,9 +481,11 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
                   <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 8, lineHeight: 1.55 }}>
                     {scanResult.summary}
                   </div>
-                  {scanResult.model && (
+                  {(scanResult.provider || scanResult.model) && (
                     <div style={{ fontSize: 11, color: "var(--text4)", marginTop: 6 }}>
-                      Model: {scanResult.model}
+                      {scanResult.provider ? `Provider: ${scanResult.provider}` : ""}
+                      {scanResult.provider && scanResult.model ? " · " : ""}
+                      {scanResult.model ? `Model: ${scanResult.model}` : ""}
                     </div>
                   )}
                   {scanResult.visibleFeatures?.length > 0 && (
@@ -648,12 +651,13 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
             marketRate={marketRate}
             apmcPrice={apmcRate}
             onResult={onSmartPrice}
+            lang={lang}
           />
 
           <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.55 }}>
               {form.harvestType === "single_harvest"
-                ? "Single-harvest crops must use the auto effort model so the app can protect farmer margin and show retailer-facing transparency."
+                ? "Single-harvest crops must use the auto effort model so the app can protect farmer margin and show wholesaler-facing transparency."
                 : "Regrowing crops stay manual. Use the market guidance if you want, or continue with your own floor price."}
             </div>
             <button

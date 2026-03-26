@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import Navbar              from "./components/Navbar.jsx";
 import Ticker              from "./components/Ticker.jsx";
@@ -113,6 +113,9 @@ function broadcastCrops(crops) {
 function broadcastJobs(jobs) {
   try { channel.postMessage({ type: "JOBS_UPDATE", jobs }); } catch (_) {}
 }
+function broadcastRequirements(requirements) {
+  try { channel.postMessage({ type: "REQUIREMENTS_UPDATE", requirements }); } catch (_) {}
+}
 
 export default function App() {
   const [page, setPage]   = useState("home");
@@ -120,6 +123,7 @@ export default function App() {
   const [lang, setLang]   = useState(() => localStorage.getItem("rr-lang") || DEFAULT_LANG);
   const [crops, setCrops] = useState([]);
   const [jobs,  setJobs]  = useState([]);
+  const [requirements, setRequirements] = useState([]);
   const [actOpen, setActOpen] = useState(true);
   const [activity, setActivity]           = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -140,11 +144,13 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        const [dc, dj] = await Promise.all([dbGetAll("crops"), dbGetAll("jobs")]);
+        const [dc, dj, dr] = await Promise.all([dbGetAll("crops"), dbGetAll("jobs"), dbGetAll("requirements")]);
         const realCrops = dc.filter(c => !c.id.startsWith("sc") && !c.id.startsWith("seed"));
         const realJobs  = dj.filter(j => !j.id.startsWith("sj") && !j.id.startsWith("seed")).map(normalizeJob);
+        const realRequirements = dr.filter(r => !r.id.startsWith("seed"));
         setCrops(realCrops);
         setJobs(realJobs);
+        setRequirements(realRequirements);
       } catch (_) {}
     })();
   }, []);
@@ -167,34 +173,71 @@ export default function App() {
       if (e.data.type === "JOBS_UPDATE") {
         setJobs(e.data.jobs);
       }
+      if (e.data.type === "REQUIREMENTS_UPDATE") {
+        setRequirements(e.data.requirements);
+      }
       if (e.data.type === "NEW_BID") {
+        const bidderLabel = e.data.shopName || e.data.bidderName;
+        const qtyLabel = e.data.quantity ? ` for ${e.data.quantity}kg` : "";
         // Show notification to farmer in another tab
-        addNotification(pick(lang, `💰 New bid: ${fmtP(e.data.amount)}/kg on ${tCrop(e.data.cropName, lang)} from ${e.data.bidderName}`, `💰 ಹೊಸ ಬಿಡ್: ${tCrop(e.data.cropName, lang)} ಮೇಲೆ ${fmtP(e.data.amount)}/ಕೆಜಿ ದರಕ್ಕೆ ${e.data.bidderName} ಬಿಡ್ ಮಾಡಿದ್ದಾರೆ`));
-        addActivity({ icon: "💰", text: pick(lang, `${e.data.bidderName} bid ${fmtP(e.data.amount)}/kg on ${tCrop(e.data.cropName, lang)}`, `${e.data.bidderName} ಅವರು ${tCrop(e.data.cropName, lang)} ಮೇಲೆ ${fmtP(e.data.amount)}/ಕೆಜಿ ಬಿಡ್ ಮಾಡಿದ್ದಾರೆ`), ts: Date.now() });
+        addNotification(pick(lang, `💰 New bid: ${fmtP(e.data.amount)}/kg${qtyLabel} on ${tCrop(e.data.cropName, lang)} from ${bidderLabel}`, `💰 ಹೊಸ ಬಿಡ್: ${tCrop(e.data.cropName, lang)} ಮೇಲೆ ${fmtP(e.data.amount)}/ಕೆಜಿ ದರಕ್ಕೆ ${bidderLabel} ${e.data.quantity ? `${e.data.quantity}ಕೆಜಿ` : ""} ಬಿಡ್ ಮಾಡಿದ್ದಾರೆ`));
+        addActivity({ icon: "💰", text: pick(lang, `${bidderLabel} bid ${fmtP(e.data.amount)}/kg${qtyLabel} on ${tCrop(e.data.cropName, lang)}`, `${bidderLabel} ಅವರು ${tCrop(e.data.cropName, lang)} ಮೇಲೆ ${fmtP(e.data.amount)}/ಕೆಜಿ ${e.data.quantity ? `${e.data.quantity}ಕೆಜಿ` : ""} ಬಿಡ್ ಮಾಡಿದ್ದಾರೆ`), ts: Date.now() });
       }
       if (e.data.type === "BID_ACCEPTED") {
-        addNotification(pick(lang, `🤝 Your bid for ${tCrop(e.data.cropName, lang)} was accepted. Confirm the order to close bidding.`, `🤝 ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ಬಿಡ್ ಅಂಗೀಕರಿಸಲಾಗಿದೆ. ಹರಾಜು ಮುಚ್ಚಲು ಆದೇಶವನ್ನು ದೃಢೀಕರಿಸಿ.`));
+        addNotification(pick(lang, `🤝 Your wholesaler bid for ${tCrop(e.data.cropName, lang)} was accepted. Confirm the order to close bidding.`, `🤝 ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ಸಗಟು ಬಿಡ್ ಅಂಗೀಕರಿಸಲಾಗಿದೆ. ಹರಾಜು ಮುಚ್ಚಲು ಆದೇಶವನ್ನು ದೃಢೀಕರಿಸಿ.`));
         addActivity({ icon: "🤝", text: pick(lang, `Farmer accepted your bid for ${tCrop(e.data.cropName, lang)} @ ${fmtP(e.data.amount)}/kg`, `${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ${fmtP(e.data.amount)}/ಕೆಜಿ ಬಿಡ್ ರೈತರು ಅಂಗೀಕರಿಸಿದ್ದಾರೆ`), ts: Date.now() });
+      }
+      if (e.data.type === "NEW_REQUIREMENT") {
+        addNotification(pick(
+          lang,
+          `🧾 ${e.data.retailerName || "Wholesaler"} needs ${tCrop(e.data.cropName, lang)}: ${e.data.quantity}kg @ ${fmtP(e.data.amount)}/kg`,
+          `🧾 ${e.data.retailerName || "ಸಗಟು ಖರೀದಿದಾರ"} ಅವರಿಗೆ ${tCrop(e.data.cropName, lang)} ಬೇಕಾಗಿದೆ: ${e.data.quantity}ಕೆಜಿ @ ${fmtP(e.data.amount)}/ಕೆಜಿ`
+        ));
+        addActivity({
+          icon: "🧾",
+          text: pick(
+            lang,
+            `${e.data.retailerName || "Wholesaler"} posted a need for ${tCrop(e.data.cropName, lang)} (${e.data.quantity}kg)`,
+            `${e.data.retailerName || "ಸಗಟು ಖರೀದಿದಾರ"} ಅವರು ${tCrop(e.data.cropName, lang)}ಗೆ ${e.data.quantity}ಕೆಜಿ ಬೇಡಿಕೆ ಪೋಸ್ಟ್ ಮಾಡಿದ್ದಾರೆ`
+          ),
+          ts: Date.now(),
+        });
+      }
+      if (e.data.type === "REQUIREMENT_MATCHED") {
+        addNotification(pick(
+          lang,
+          `🌾 ${e.data.farmerName} accepted your need for ${tCrop(e.data.cropName, lang)} at ${fmtP(e.data.amount)}/kg.`,
+          `🌾 ${e.data.farmerName} ಅವರು ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ಬೇಡಿಕೆಯನ್ನು ${fmtP(e.data.amount)}/ಕೆಜಿ ದರಕ್ಕೆ ಅಂಗೀಕರಿಸಿದ್ದಾರೆ.`
+        ));
+        addActivity({
+          icon: "🌾",
+          text: pick(
+            lang,
+            `${e.data.farmerName} matched your ${tCrop(e.data.cropName, lang)} requirement for ${e.data.quantity}kg`,
+            `${e.data.farmerName} ಅವರು ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ${e.data.quantity}ಕೆಜಿ ಬೇಡಿಕೆಗೆ ಹೊಂದಿಕೊಂಡಿದ್ದಾರೆ`
+          ),
+          ts: Date.now(),
+        });
       }
       if (e.data.type === "ORDER_CONFIRMED") {
         if (e.data.direct) {
           addNotification(pick(
             lang,
-            `✅ ${e.data.retailerName || "Retailer"} accepted ${tCrop(e.data.cropName, lang)}. Order confirmed and delivery is now open.`,
-            `✅ ${e.data.retailerName || "ಖರೀದಿದಾರರು"} ${tCrop(e.data.cropName, lang)} ಅನ್ನು ಸ್ವೀಕರಿಸಿದ್ದಾರೆ. ಆದೇಶ ದೃಢೀಕರಿಸಲಾಗಿದೆ ಮತ್ತು ವಿತರಣೆ ಈಗ ತೆರೆಯಲಾಗಿದೆ.`
+            `✅ ${e.data.retailerName || "Wholesaler"} accepted ${tCrop(e.data.cropName, lang)}. Order confirmed and delivery is now open.`,
+            `✅ ${e.data.retailerName || "ಸಗಟು ಖರೀದಿದಾರರು"} ${tCrop(e.data.cropName, lang)} ಅನ್ನು ಸ್ವೀಕರಿಸಿದ್ದಾರೆ. ಆದೇಶ ದೃಢೀಕರಿಸಲಾಗಿದೆ ಮತ್ತು ವಿತರಣೆ ಈಗ ತೆರೆಯಲಾಗಿದೆ.`
           ));
           addActivity({
             icon: "✅",
             text: pick(
               lang,
-              `${e.data.retailerName || "Retailer"} accepted ${tCrop(e.data.cropName, lang)} @ ${fmtP(e.data.price || 0)}/kg · Delivery payout ${fmtP(e.data.deliveryPayout)}`,
-              `${e.data.retailerName || "ಖರೀದಿದಾರರು"} ${tCrop(e.data.cropName, lang)} ಅನ್ನು ${fmtP(e.data.price || 0)}/ಕೆಜಿ ದರಕ್ಕೆ ಸ್ವೀಕರಿಸಿದ್ದಾರೆ · ಚಾಲಕರ ಪಾವತಿ ${fmtP(e.data.deliveryPayout)}`
+              `${e.data.retailerName || "Wholesaler"} accepted ${tCrop(e.data.cropName, lang)} @ ${fmtP(e.data.price || 0)}/kg · Delivery payout ${fmtP(e.data.deliveryPayout)}`,
+              `${e.data.retailerName || "ಸಗಟು ಖರೀದಿದಾರರು"} ${tCrop(e.data.cropName, lang)} ಅನ್ನು ${fmtP(e.data.price || 0)}/ಕೆಜಿ ದರಕ್ಕೆ ಸ್ವೀಕರಿಸಿದ್ದಾರೆ · ಚಾಲಕರ ಪಾವತಿ ${fmtP(e.data.deliveryPayout)}`
             ),
             ts: Date.now(),
           });
         } else {
-          addNotification(pick(lang, `✅ Retailer confirmed ${tCrop(e.data.cropName, lang)}. Bid accepted and delivery route is now open.`, `✅ ಖರೀದಿದಾರರು ${tCrop(e.data.cropName, lang)} ಅನ್ನು ದೃಢೀಕರಿಸಿದ್ದಾರೆ. ಬಿಡ್ ಅಂಗೀಕರಿಸಿ ವಿತರಣಾ ಮಾರ್ಗ ಈಗ ಲಭ್ಯವಾಗಿದೆ.`));
-          addActivity({ icon: "✅", text: pick(lang, `Retailer confirmed ${tCrop(e.data.cropName, lang)} · Delivery payout ${fmtP(e.data.deliveryPayout)}`, `${tCrop(e.data.cropName, lang)}ಗಾಗಿ ಖರೀದಿದಾರರು ದೃಢೀಕರಿಸಿದ್ದಾರೆ · ಚಾಲಕರ ಪಾವತಿ ${fmtP(e.data.deliveryPayout)}`), ts: Date.now() });
+          addNotification(pick(lang, `✅ Wholesaler confirmed ${tCrop(e.data.cropName, lang)}. Bid accepted and delivery route is now open.`, `✅ ಸಗಟು ಖರೀದಿದಾರರು ${tCrop(e.data.cropName, lang)} ಅನ್ನು ದೃಢೀಕರಿಸಿದ್ದಾರೆ. ಬಿಡ್ ಅಂಗೀಕರಿಸಿ ವಿತರಣಾ ಮಾರ್ಗ ಈಗ ಲಭ್ಯವಾಗಿದೆ.`));
+          addActivity({ icon: "✅", text: pick(lang, `Wholesaler confirmed ${tCrop(e.data.cropName, lang)} · Delivery payout ${fmtP(e.data.deliveryPayout)}`, `${tCrop(e.data.cropName, lang)}ಗಾಗಿ ಸಗಟು ಖರೀದಿದಾರರು ದೃಢೀಕರಿಸಿದ್ದಾರೆ · ಚಾಲಕರ ಪಾವತಿ ${fmtP(e.data.deliveryPayout)}`), ts: Date.now() });
         }
       }
       if (e.data.type === "JOB_CLAIMED") {
@@ -220,7 +263,7 @@ export default function App() {
     }
     channel.addEventListener("message", onMessage);
     return () => channel.removeEventListener("message", onMessage);
-  }, [addActivity, addNotification, lang]);
+  }, [addActivity, addNotification, lang, user]);
 
   // Refresh time labels every minute
   useEffect(() => {
@@ -246,7 +289,39 @@ export default function App() {
     setCrops(updated);
     broadcastCrops(updated);   // ← Retailer tab sees it immediately
     try { await dbPut("crops", crop); } catch (_) {}
-    addActivity({ icon: "🌾", text: pick(lang, `You posted ${tCrop(crop.cropName, lang)} (${crop.quantity}kg) for retailers to accept`, `ನೀವು ${tCrop(crop.cropName, lang)} (${crop.quantity}ಕೆಜಿ) ಅನ್ನು ಖರೀದಿದಾರರು ಸ್ವೀಕರಿಸಲು ಪೋಸ್ಟ್ ಮಾಡಿದ್ದೀರಿ`), ts: Date.now() });
+    addActivity({ icon: "🌾", text: pick(lang, `You posted ${tCrop(crop.cropName, lang)} (${crop.quantity}kg) for wholesalers to bid on`, `ನೀವು ${tCrop(crop.cropName, lang)} (${crop.quantity}ಕೆಜಿ) ಮೇಲೆ ಸಗಟು ಖರೀದಿದಾರರು ಬಿಡ್ ಮಾಡಲು ಪೋಸ್ಟ್ ಮಾಡಿದ್ದೀರಿ`), ts: Date.now() });
+  }
+
+  async function onPostRequirement(requirement) {
+    const updated = [requirement, ...requirements];
+    setRequirements(updated);
+    broadcastRequirements(updated);
+    try { await dbPut("requirements", requirement); } catch (_) {}
+
+    channel.postMessage({
+      type: "NEW_REQUIREMENT",
+      cropName: requirement.cropName,
+      quantity: requirement.quantity,
+      amount: requirement.bidAmount,
+      retailerName: requirement.retailerName,
+    });
+
+    addActivity({
+      icon: "🧾",
+      text: pick(
+        lang,
+        `You posted a crop need for ${tCrop(requirement.cropName, lang)} (${requirement.quantity}kg) @ ${fmtP(requirement.bidAmount)}/kg`,
+        `ನೀವು ${tCrop(requirement.cropName, lang)}ಗೆ ${requirement.quantity}ಕೆಜಿ ಬೇಡಿಕೆಯನ್ನು ${fmtP(requirement.bidAmount)}/ಕೆಜಿ ದರಕ್ಕೆ ಪೋಸ್ಟ್ ಮಾಡಿದ್ದೀರಿ`
+      ),
+      ts: Date.now(),
+    });
+  }
+
+  async function onDeleteRequirement(requirementId) {
+    const updated = requirements.filter(item => item.id !== requirementId);
+    setRequirements(updated);
+    broadcastRequirements(updated);
+    try { await dbDelete("requirements", requirementId); } catch (_) {}
   }
 
   // Retailer places a bid → save to DB → broadcast to all tabs
@@ -271,9 +346,11 @@ export default function App() {
       cropName:   crop?.cropName,
       amount:     bid.amount,
       bidderName: bid.bidderName,
+      shopName:   bid.shopName || bid.bidderName,
+      quantity:   bid.quantity,
     });
 
-    addActivity({ icon: "💰", text: pick(lang, `You bid ${fmtP(bid.amount)}/kg on ${tCrop(crop?.cropName, lang)} from ${tVillage(crop?.village, lang)}`, `ನೀವು ${tVillage(crop?.village, lang)}ನ ${tCrop(crop?.cropName, lang)} ಮೇಲೆ ${fmtP(bid.amount)}/ಕೆಜಿ ಬಿಡ್ ಮಾಡಿದ್ದೀರಿ`), ts: Date.now() });
+    addActivity({ icon: "💰", text: pick(lang, `You placed a wholesale bid of ${fmtP(bid.amount)}/kg for ${bid.quantity}kg on ${tCrop(crop?.cropName, lang)} from ${tVillage(crop?.village, lang)}`, `ನೀವು ${tVillage(crop?.village, lang)}ನ ${tCrop(crop?.cropName, lang)} ಮೇಲೆ ${bid.quantity}ಕೆಜಿಗೆ ${fmtP(bid.amount)}/ಕೆಜಿ ಸಗಟು ಬಿಡ್ ಮಾಡಿದ್ದೀರಿ`), ts: Date.now() });
   }
 
   // Farmer accepts a bid → create job → broadcast to all tabs
@@ -293,7 +370,7 @@ export default function App() {
       farmerName:    crop.farmerName,
       farmerPhone:   crop.farmerPhone,
       retailerId:    bid.bidderId,
-      retailerName:  bid.bidderName,
+      retailerName:  bid.shopName || bid.bidderName,
       retailerPhone: bid.bidderPhone,
       retailerVillage: bid.bidderVillage || "",
       retailerDistrict: bid.bidderDistrict || bid.district || "",
@@ -334,7 +411,103 @@ export default function App() {
       retailerId: bid.bidderId,
     });
 
-    addActivity({ icon: "🤝", text: pick(lang, `Bid accepted. Waiting for ${bid.bidderName} to confirm order for ${tCrop(crop.cropName, lang)}`, `${tCrop(crop.cropName, lang)}ಗಾಗಿ ${bid.bidderName} ಅವರು ಆದೇಶವನ್ನು ದೃಢೀಕರಿಸುವುದಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ`), ts: Date.now() });
+    addActivity({ icon: "🤝", text: pick(lang, `Bid accepted. Waiting for ${bid.shopName || bid.bidderName} to confirm order for ${tCrop(crop.cropName, lang)}`, `${tCrop(crop.cropName, lang)}ಗಾಗಿ ${bid.shopName || bid.bidderName} ಅವರು ಆದೇಶವನ್ನು ದೃಢೀಕರಿಸುವುದಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ`), ts: Date.now() });
+  }
+
+  async function onAcceptRequirement(requirement, response) {
+    if (!requirement || requirement.status !== "open") return;
+
+    const quantity = Number(response?.quantity || 0);
+    const amount = Number(response?.amount || 0);
+
+    if (!quantity || !amount) return;
+
+    const now = Date.now();
+    const routeMetrics = estimateRouteMetrics({
+      farmerVillage: user?.village,
+      farmerDistrict: user?.district,
+      retailerVillage: requirement.retailerVillage,
+      retailerDistrict: requirement.retailerDistrict,
+    });
+
+    const job = {
+      id: uid(),
+      sourceType: "requirement",
+      requirementId: requirement.id,
+      cropId: null,
+      cropName: requirement.cropName,
+      emoji: requirement.emoji || "🌾",
+      farmerId: user.id,
+      farmerName: user.name,
+      farmerPhone: user.phone,
+      retailerId: requirement.retailerId,
+      retailerName: requirement.retailerName,
+      retailerPhone: requirement.retailerPhone,
+      retailerVillage: requirement.retailerVillage || "",
+      retailerDistrict: requirement.retailerDistrict || "",
+      retailerPin: requirement.retailerPin || "",
+      deliveryId: null,
+      deliveryName: null,
+      deliveryPhone: null,
+      winningBid: amount,
+      quantity,
+      pickupAddress: `${user.village || ""}, ${user.district || ""}, Karnataka ${user.pin || ""}`.replace(/^,\s*|,\s*$/g, "").replace(/\s+,/g, ","),
+      village: user.village || "",
+      district: user.district || "",
+      status: "awaiting-retailer",
+      createdAt: now,
+      requirementNotes: requirement.notes || "",
+      farmerPricingMode: response?.pricing?.pricingMode || "",
+      farmerCostPerKg: Number(response?.pricing?.costPerKg || 0),
+      farmerExpectedPrice: Number(response?.pricing?.expectedPrice || 0),
+      wholesalerBidAmount: Number(requirement.bidAmount || 0),
+      ...routeMetrics,
+    };
+
+    const updatedRequirements = requirements.map(item =>
+      item.id === requirement.id
+        ? {
+            ...item,
+            status: "matched",
+            matchedAt: now,
+            matchedByFarmerId: user.id,
+            matchedByFarmerName: user.name,
+            matchedByFarmerPhone: user.phone,
+            matchedQuantity: quantity,
+            farmerOfferPrice: amount,
+          }
+        : item
+    );
+    const updatedJobs = [job, ...jobs];
+
+    setRequirements(updatedRequirements);
+    setJobs(updatedJobs);
+    broadcastRequirements(updatedRequirements);
+    broadcastJobs(updatedJobs);
+
+    try {
+      await dbPut("requirements", updatedRequirements.find(item => item.id === requirement.id));
+      await dbPut("jobs", job);
+    } catch (_) {}
+
+    channel.postMessage({
+      type: "REQUIREMENT_MATCHED",
+      cropName: requirement.cropName,
+      amount,
+      quantity,
+      farmerName: user.name,
+      retailerId: requirement.retailerId,
+    });
+
+    addActivity({
+      icon: "🤝",
+      text: pick(
+        lang,
+        `You accepted ${requirement.retailerName}'s need for ${tCrop(requirement.cropName, lang)} @ ${fmtP(amount)}/kg for ${quantity}kg`,
+        `ನೀವು ${requirement.retailerName} ಅವರ ${tCrop(requirement.cropName, lang)} ಬೇಡಿಕೆಯನ್ನು ${fmtP(amount)}/ಕೆಜಿ ದರಕ್ಕೆ ${quantity}ಕೆಜಿಗೆ ಅಂಗೀಕರಿಸಿದ್ದೀರಿ`
+      ),
+      ts: now,
+    });
   }
 
   async function onConfirmRetailerOrder(jobId) {
@@ -346,6 +519,15 @@ export default function App() {
 
     const job = updated.find(j => j.id === jobId);
     try { await dbPut("jobs", job); } catch (_) {}
+
+    if (job?.requirementId) {
+      const updatedRequirements = requirements.map(item =>
+        item.id === job.requirementId ? { ...item, status: "confirmed", confirmedAt: Date.now() } : item
+      );
+      setRequirements(updatedRequirements);
+      broadcastRequirements(updatedRequirements);
+      try { await dbPut("requirements", updatedRequirements.find(item => item.id === job.requirementId)); } catch (_) {}
+    }
 
     channel.postMessage({
       type: "ORDER_CONFIRMED",
@@ -359,7 +541,7 @@ export default function App() {
       message: `Raitha Reach: Your ${job?.cropName} order is accepted by ${job?.retailerName}. Pickup order is confirmed.`,
     });
 
-    addActivity({ icon: "✅", text: pick(lang, `Retailer confirmed order for ${tCrop(job?.cropName, lang)}. Bid closed and delivery opened.`, `${tCrop(job?.cropName, lang)}ಗಾಗಿ ಖರೀದಿದಾರರು ಆದೇಶ ದೃಢೀಕರಿಸಿದ್ದಾರೆ. ಹರಾಜು ಮುಚ್ಚಿ ವಿತರಣೆ ತೆರೆದಿದೆ.`), ts: Date.now() });
+    addActivity({ icon: "✅", text: pick(lang, `Wholesaler confirmed order for ${tCrop(job?.cropName, lang)}. Bid closed and delivery opened.`, `${tCrop(job?.cropName, lang)}ಗಾಗಿ ಸಗಟು ಖರೀದಿದಾರರು ಆದೇಶ ದೃಢೀಕರಿಸಿದ್ದಾರೆ. ಹರಾಜು ಮುಚ್ಚಿ ವಿತರಣೆ ತೆರೆದಿದೆ.`), ts: Date.now() });
   }
 
   async function onRetailerAcceptCrop(crop, retailer) {
@@ -465,7 +647,26 @@ export default function App() {
   // Farmer cancels a job (only if not yet claimed)
   async function onDeleteJob(jobId) {
     const job = jobs.find(j => j.id === jobId);
-    if (job) {
+    if (job?.requirementId) {
+      const updatedRequirements = requirements.map(item =>
+        item.id === job.requirementId
+          ? {
+              ...item,
+              status: "open",
+              matchedAt: null,
+              matchedByFarmerId: null,
+              matchedByFarmerName: null,
+              matchedByFarmerPhone: null,
+              matchedQuantity: null,
+              farmerOfferPrice: null,
+              confirmedAt: null,
+            }
+          : item
+      );
+      setRequirements(updatedRequirements);
+      broadcastRequirements(updatedRequirements);
+      try { await dbPut("requirements", updatedRequirements.find(item => item.id === job.requirementId)); } catch (_) {}
+    } else if (job) {
       const updatedCrops = crops.map(c =>
         c.id === job.cropId ? { ...c, status: "open", bids: [] } : c
       );
@@ -600,13 +801,22 @@ export default function App() {
 
     const job = updated.find(j => j.id === jobId);
 
-    if (status === "delivered") {
+    if (status === "delivered" && job?.cropId) {
       const updatedCrops = crops.map(c =>
         c.id === job?.cropId ? { ...c, status: "delivered" } : c
       );
       setCrops(updatedCrops);
       broadcastCrops(updatedCrops);
       try { await dbPut("crops", updatedCrops.find(c => c.id === job?.cropId)); } catch (_) {}
+    }
+
+    if (status === "delivered" && job?.requirementId) {
+      const updatedRequirements = requirements.map(item =>
+        item.id === job.requirementId ? { ...item, status: "fulfilled", deliveredAt: Date.now() } : item
+      );
+      setRequirements(updatedRequirements);
+      broadcastRequirements(updatedRequirements);
+      try { await dbPut("requirements", updatedRequirements.find(item => item.id === job.requirementId)); } catch (_) {}
     }
 
     try { await dbPut("jobs", job); } catch (_) {}
@@ -619,10 +829,10 @@ export default function App() {
   }
 
   // ── Shared props ─────────────────────────────────────────────
-  const shared = { user, crops, jobs, rates, toast, addActivity, addNotification, lang };
+  const shared = { user, crops, jobs, requirements, rates, toast, addActivity, addNotification, lang };
 
   return (
-    <div style={{ paddingTop: 100, fontFamily: lang === "kn" ? "var(--font-kn)" : "var(--font)" }}>
+    <div className="rr-app-frame" style={{ fontFamily: lang === "kn" ? "var(--font-kn)" : "var(--font)" }}>
       <Navbar
         page={page} setPage={setPage}
         user={user} onLogout={onLogout}
@@ -645,6 +855,7 @@ export default function App() {
           {...shared}
           onPost={onPost}
           onAcceptBid={onAcceptBid}
+          onAcceptRequirement={onAcceptRequirement}
           onDeleteCrop={onDeleteCrop}
           onDeleteJob={onDeleteJob}
         />
@@ -654,6 +865,9 @@ export default function App() {
           {...shared}
           onAcceptCrop={onRetailerAcceptCrop}
           onConfirmOrder={onConfirmRetailerOrder}
+          onBid={onBid}
+          onPostRequirement={onPostRequirement}
+          onDeleteRequirement={onDeleteRequirement}
         />
       )}
       {user && user.role === "delivery" && (

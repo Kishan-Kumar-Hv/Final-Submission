@@ -67,7 +67,7 @@ export function Stepper({status,lang="en"}){
 /* ── Toast Container ── */
 export function Toasts({list}){
   return(
-    <div style={{position:"fixed",bottom:24,right:24,zIndex:9999,display:"flex",flexDirection:"column",gap:8,maxWidth:320}}>
+    <div className="rr-toast-stack" style={{position:"fixed",bottom:24,right:24,zIndex:9999,display:"flex",flexDirection:"column",gap:8,maxWidth:320}}>
       {list.map(t=>(
         <div key={t.id} style={{background:"#fff",border:"1px solid var(--border)",borderRadius:12,padding:"12px 16px",boxShadow:"var(--shadow-lg)",animation:"slideR .25s ease",display:"flex",alignItems:"flex-start",gap:10,borderLeft:`4px solid ${t.type==="error"?"var(--red)":t.type==="gold"?"var(--gold)":"var(--green)"}`}}>
           <span style={{fontSize:18,flexShrink:0}}>{t.icon}</span>
@@ -156,7 +156,7 @@ export function Textarea({label,...props}){
 /* ── Activity Panel ── */
 export function ActivityPanel({activity,open,setOpen,lang="en"}){
   return(
-    <div style={{position:"fixed",bottom:24,left:20,width:260,zIndex:900,fontFamily:"inherit"}}>
+    <div className="rr-activity-panel" style={{position:"fixed",bottom:24,left:20,width:260,zIndex:900,fontFamily:"inherit"}}>
       <div onClick={()=>setOpen(o=>!o)} style={{background:"#fff",border:"1px solid var(--border)",borderRadius:open?"12px 12px 0 0":12,padding:"8px 14px",display:"flex",alignItems:"center",gap:7,cursor:"pointer",boxShadow:"var(--shadow-sm)"}}>
         <LiveDot/>
         <span style={{fontSize:12,fontWeight:700,color:"var(--text2)",flex:1}}>{pick(lang,"Live Activity","ಲೈವ್ ಚಟುವಟಿಕೆ")}</span>

@@ -15,7 +15,7 @@ export default function AboutPage({ setPage, lang }) {
         {
           icon: "🔥",
           title: "ರಿಯಲ್-ಟೈಮ್ ಬಿಡ್ ಹೋರಾಟ",
-          desc: "ಯಾವುದೇ ಜಿಲ್ಲೆಯಿಂದ ಖರೀದಿದಾರರು ಲೈವ್ ಆಗಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಪ್ರತಿಯೊಂದು ಬಿಡ್ ಕೂಡ ತಕ್ಷಣ ಕಾಣುತ್ತದೆ ಮತ್ತು ಅವರು ಸಂಪೂರ್ಣ ಪಾರದರ್ಶಕತೆಯಲ್ಲಿ ಉತ್ತಮ ಬಿಡ್ ಸ್ವೀಕರಿಸಬಹುದು.",
+          desc: "ಯಾವುದೇ ಜಿಲ್ಲೆಯಿಂದ ಸಗಟು ಖರೀದಿದಾರರು ಲೈವ್ ಆಗಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಪ್ರತಿಯೊಂದು ಬಿಡ್ ಕೂಡ ತಕ್ಷಣ ಕಾಣುತ್ತದೆ ಮತ್ತು ಅವರು ಸಂಪೂರ್ಣ ಪಾರದರ್ಶಕತೆಯಲ್ಲಿ ಉತ್ತಮ ಬಿಡ್ ಸ್ವೀಕರಿಸಬಹುದು.",
         },
         {
           icon: "📊",
@@ -25,7 +25,7 @@ export default function AboutPage({ setPage, lang }) {
         {
           icon: "📸",
           title: "ನಿಜವಾದ ಬೆಳೆ ಫೋಟೋಗಳು",
-          desc: "ರೈತರು ನಿಜವಾದ ಬೆಳೆ ಚಿತ್ರಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡುತ್ತಾರೆ, ಆದ್ದರಿಂದ ಖರೀದಿದಾರರು ಬಿಡ್ ಮಾಡುವ ಮುನ್ನ ಗುಣಮಟ್ಟ ಪರಿಶೀಲಿಸಬಹುದು. ನಂಬಿಕೆ ಹೆಚ್ಚಿದಂತೆ ಬಿಡ್‌ಗಳೂ ಉತ್ತಮವಾಗುತ್ತವೆ.",
+          desc: "ರೈತರು ನಿಜವಾದ ಬೆಳೆ ಚಿತ್ರಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡುತ್ತಾರೆ, ಆದ್ದರಿಂದ ಸಗಟು ಖರೀದಿದಾರರು ಬಿಡ್ ಮಾಡುವ ಮುನ್ನ ಗುಣಮಟ್ಟ ಪರಿಶೀಲಿಸಬಹುದು. ನಂಬಿಕೆ ಹೆಚ್ಚಿದಂತೆ ಬಿಡ್‌ಗಳೂ ಉತ್ತಮವಾಗುತ್ತವೆ.",
         },
         {
           icon: "📍",
@@ -47,7 +47,7 @@ export default function AboutPage({ setPage, lang }) {
         {
           icon: "🔥",
           title: "Real-time Bidding Wars",
-          desc: "Retailers from any district compete live. Farmers see every bid instantly and can accept the best one with complete transparency.",
+          desc: "Wholesalers from any district compete live. Farmers see every bid instantly and can accept the best one with complete transparency.",
         },
         {
           icon: "📊",
@@ -87,8 +87,8 @@ export default function AboutPage({ setPage, lang }) {
         },
         {
           icon: "🏪",
-          title: "ಖರೀದಿದಾರರಿಗೆ ಸಿದ್ಧ",
-          subtitle: "ಖರೀದಿದಾರರು ನಂಬಿಕೆಯ ಲಿಸ್ಟಿಂಗ್‌ಗಳ ಮೇಲೆ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ",
+          title: "ಸಗಟು ಖರೀದಿದಾರರಿಗೆ ಸಿದ್ಧ",
+          subtitle: "ಸಗಟು ಖರೀದಿದಾರರು ನಂಬಿಕೆಯ ಲಿಸ್ಟಿಂಗ್‌ಗಳ ಮೇಲೆ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ",
           image: visuals.produce,
           points: ["ಕರ್ನಾಟಕದಾದ್ಯಂತದ ಬೆಳೆಗಳನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ", "ಲೈವ್ ಬಿಡ್‌ಗಳನ್ನು ಎಪಿಎಂಸಿ ದರಗಳೊಂದಿಗೆ ಹೋಲಿಸಿ", "ನೇರವಾಗಿ ಫಾರ್ಮ್‌ಗಳಿಂದ ಹೆಚ್ಚು ತಾಜಾ ಉತ್ಪನ್ನ ಪಡೆಯಿರಿ"],
         },
@@ -110,8 +110,8 @@ export default function AboutPage({ setPage, lang }) {
         },
         {
           icon: "🏪",
-          title: "Buyer Ready",
-          subtitle: "Retailers bid on trusted, verified listings",
+          title: "Wholesaler Ready",
+          subtitle: "Wholesalers bid on trusted, verified listings",
           image: visuals.produce,
           points: ["Browse crops across Karnataka", "Compare live bids with APMC context", "Secure fresher produce directly from farms"],
         },
@@ -223,8 +223,8 @@ export default function AboutPage({ setPage, lang }) {
               <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 560, marginBottom: 28 }}>
                 {pick(
                   lang,
-                  "Raitha Reach is a farm-direct platform that helps farmers sell smarter, helps retailers buy fresher, and makes delivery part of the same seamless journey.",
-                  "ರೈತ ರೀಚ್ ಎನ್ನುವುದು ರೈತರು ಹೆಚ್ಚು ಚಾಣಾಕ್ಷವಾಗಿ ಮಾರಾಟ ಮಾಡಲು, ಖರೀದಿದಾರರು ಹೆಚ್ಚು ತಾಜಾ ಉತ್ಪನ್ನ ಖರೀದಿಸಲು ಮತ್ತು ವಿತರಣೆಯನ್ನು ಅದೇ ಸರಳ ಪ್ರಯಾಣದ ಭಾಗವಾಗಿಸಲು ಸಹಾಯ ಮಾಡುವ ಫಾರ್ಮ್-ಡೈರೆಕ್ಟ್ ವೇದಿಕೆ."
+                  "Raitha Reach is a farm-direct platform that helps farmers sell smarter, helps wholesalers buy fresher, and makes delivery part of the same seamless journey.",
+                  "ರೈತ ರೀಚ್ ಎನ್ನುವುದು ರೈತರು ಹೆಚ್ಚು ಚಾಣಾಕ್ಷವಾಗಿ ಮಾರಾಟ ಮಾಡಲು, ಸಗಟು ಖರೀದಿದಾರರು ಹೆಚ್ಚು ತಾಜಾ ಉತ್ಪನ್ನ ಖರೀದಿಸಲು ಮತ್ತು ವಿತರಣೆಯನ್ನು ಅದೇ ಸರಳ ಪ್ರಯಾಣದ ಭಾಗವಾಗಿಸಲು ಸಹಾಯ ಮಾಡುವ ಫಾರ್ಮ್-ಡೈರೆಕ್ಟ್ ವೇದಿಕೆ."
                 )}
               </p>
 
@@ -359,7 +359,7 @@ export default function AboutPage({ setPage, lang }) {
                   >
                     <img
                       src={image}
-                      alt={index === 0 ? pick(lang, "Farmer in the field", "ಹೊಳೆಯಲ್ಲಿ ರೈತ") : pick(lang, "Fresh produce ready for buyers", "ಖರೀದಿದಾರರಿಗೆ ತಯಾರಾದ ತಾಜಾ ಉತ್ಪನ್ನ")}
+                      alt={index === 0 ? pick(lang, "Farmer in the field", "ಹೊಳೆಯಲ್ಲಿ ರೈತ") : pick(lang, "Fresh produce ready for wholesalers", "ಸಗಟು ಖರೀದಿದಾರರಿಗೆ ತಯಾರಾದ ತಾಜಾ ಉತ್ಪನ್ನ")}
                       style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                     />
                     <div
@@ -402,20 +402,20 @@ export default function AboutPage({ setPage, lang }) {
               {pick(lang, "Our Mission", "ನಮ್ಮ ಧ್ಯೇಯ")}
             </div>
             <h2 style={{ fontSize: 28, fontWeight: 900, color: "var(--text)", lineHeight: 1.15, marginBottom: 14 }}>
-              {pick(lang, "Better prices for farmers. Better sourcing for buyers.", "ರೈತರಿಗೆ ಉತ್ತಮ ಬೆಲೆ. ಖರೀದಿದಾರರಿಗೆ ಉತ್ತಮ ಮೂಲಸಾಗಣೆ.")}
+              {pick(lang, "Better prices for farmers. Better sourcing for wholesalers.", "ರೈತರಿಗೆ ಉತ್ತಮ ಬೆಲೆ. ಸಗಟು ಖರೀದಿದಾರರಿಗೆ ಉತ್ತಮ ಮೂಲಸಾಗಣೆ.")}
             </h2>
             <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.8, marginBottom: 12 }}>
               {pick(
                 lang,
                 "Karnataka has millions of farmers, but too many still lose value to commission agents and broken supply chains. Raitha Reach creates a cleaner path from farm to buyer.",
-                "ಕರ್ನಾಟಕದಲ್ಲಿ ಲಕ್ಷಾಂತರ ರೈತರು ಇದ್ದರೂ, ಇನ್ನೂ ಅನೇಕರು ಕಮಿಷನ್ ಏಜೆಂಟ್‌ಗಳು ಮತ್ತು ಮುರಿದ ಸರಬರಾಜು ಸರಪಳಿಗಳಿಂದ ಮೌಲ್ಯ ಕಳೆದುಕೊಳ್ಳುತ್ತಿದ್ದಾರೆ. ರೈತ ರೀಚ್ ಫಾರ್ಮ್‌ನಿಂದ ಖರೀದಿದಾರನಿಗೆ ಸ್ವಚ್ಛವಾದ ಮಾರ್ಗವನ್ನು ನಿರ್ಮಿಸುತ್ತದೆ."
+                "ಕರ್ನಾಟಕದಲ್ಲಿ ಲಕ್ಷಾಂತರ ರೈತರು ಇದ್ದರೂ, ಇನ್ನೂ ಅನೇಕರು ಕಮಿಷನ್ ಏಜೆಂಟ್‌ಗಳು ಮತ್ತು ಮುರಿದ ಸರಬರಾಜು ಸರಪಳಿಗಳಿಂದ ಮೌಲ್ಯ ಕಳೆದುಕೊಳ್ಳುತ್ತಿದ್ದಾರೆ. ರೈತ ರೀಚ್ ಫಾರ್ಮ್‌ನಿಂದ ಸಗಟು ಖರೀದಿದಾರನಿಗೆ ಸ್ವಚ್ಛವಾದ ಮಾರ್ಗವನ್ನು ನಿರ್ಮಿಸುತ್ತದೆ."
               )}
             </p>
             <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.8 }}>
               {pick(
                 lang,
-                "Farmers post crops, retailers bid live, and delivery partners close the loop with farm-gate pickup. The result is transparent pricing, faster movement, and more dignity for the people who grow the food.",
-                "ರೈತರು ಬೆಳೆಗಳನ್ನು ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ, ಖರೀದಿದಾರರು ಲೈವ್ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ, ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಫಾರ್ಮ್-ಗೇಟ್ ಪಿಕಪ್ ಮೂಲಕ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸುತ್ತಾರೆ. ಪರಿಣಾಮವಾಗಿ ಪಾರದರ್ಶಕ ಬೆಲೆ, ವೇಗವಾದ ಸಾಗಾಟ ಮತ್ತು ಆಹಾರ ಬೆಳೆಸುವವರಿಗೆ ಹೆಚ್ಚುವರಿ ಗೌರವ ಸಿಗುತ್ತದೆ."
+                "Farmers post crops, wholesalers bid live, and delivery partners close the loop with farm-gate pickup. The result is transparent pricing, faster movement, and more dignity for the people who grow the food.",
+                "ರೈತರು ಬೆಳೆಗಳನ್ನು ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ, ಸಗಟು ಖರೀದಿದಾರರು ಲೈವ್ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ, ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಫಾರ್ಮ್-ಗೇಟ್ ಪಿಕಪ್ ಮೂಲಕ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸುತ್ತಾರೆ. ಪರಿಣಾಮವಾಗಿ ಪಾರದರ್ಶಕ ಬೆಲೆ, ವೇಗವಾದ ಸಾಗಾಟ ಮತ್ತು ಆಹಾರ ಬೆಳೆಸುವವರಿಗೆ ಹೆಚ್ಚುವರಿ ಗೌರವ ಸಿಗುತ್ತದೆ."
               )}
             </p>
           </div>

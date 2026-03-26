@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { pick } from "../i18n.js";
 
 const PROFILE_BY_CATEGORY = {
   Vegetables: {
@@ -152,6 +153,68 @@ function average(list) {
 function money(value) {
   const num = Number(value || 0);
   return `₹${num % 1 ? num.toFixed(1) : num}`;
+}
+
+function tDemandLevel(level, lang) {
+  return pick(
+    lang,
+    level,
+    {
+      "Stable demand": "ಸ್ಥಿರ ಬೇಡಿಕೆ",
+      "High demand": "ಹೆಚ್ಚಿನ ಬೇಡಿಕೆ",
+      "Soft demand": "ಮಂದ ಬೇಡಿಕೆ",
+    }[level] || level
+  );
+}
+
+function tDemandPulse(pulse, lang) {
+  return pick(
+    lang,
+    pulse,
+    {
+      "Steady today": "ಇಂದು ಸ್ಥಿರವಾಗಿದೆ",
+      "Rising now": "ಈಗ ಏರುತ್ತಿದೆ",
+      "Cooling now": "ಈಗ ಇಳಿಯುತ್ತಿದೆ",
+    }[pulse] || pulse
+  );
+}
+
+function tBreakdownLabel(label, lang) {
+  return pick(
+    lang,
+    label,
+    {
+      "Land prep + replanting": "ನೆಲ ಸಿದ್ಧತೆ + ಮರು ನೆಡುವಿಕೆ",
+      "Seeds / nursery": "ಬೀಜ / ನರ್ಸರಿ",
+      "Fertilizer, water, crop care": "ರಸಗೊಬ್ಬರ, ನೀರು, ಬೆಳೆ ಆರೈಕೆ",
+      "Labour + harvesting": "ಕಾರ್ಮಿಕರು + ಕೊಯ್ಲು",
+      "Sorting + transport": "ವಿಂಗಡಣೆ + ಸಾರಿಗೆ",
+    }[label] || label
+  );
+}
+
+function tPresetLabel(label, lang) {
+  return pick(
+    lang,
+    label,
+    {
+      Competitive: "ಸ್ಪರ್ಧಾತ್ಮಕ",
+      "Match APMC": "ಎಪಿಎಂಸಿಗೆ ಹೊಂದಿಸಿ",
+      Premium: "ಪ್ರೀಮಿಯಂ",
+    }[label] || label
+  );
+}
+
+function tPresetHint(hint, lang) {
+  return pick(
+    lang,
+    hint,
+    {
+      "Quick sale and repeat harvest cycle": "ವೇಗದ ಮಾರಾಟ ಮತ್ತು ಮರು ಕೊಯ್ಲು ಚಕ್ರ",
+      "Stay near the live mandi reference": "ಲೈವ್ ಮಂಡಿ ದರದ ಹತ್ತಿರದಲ್ಲಿರಿ",
+      "For fresh quality or stronger demand": "ತಾಜಾ ಗುಣಮಟ್ಟ ಅಥವಾ ಹೆಚ್ಚಿನ ಬೇಡಿಕೆಗಾಗಿ",
+    }[hint] || hint
+  );
 }
 
 function getDemandInsight(marketRate, apmcPrice) {
@@ -354,6 +417,7 @@ export function SmartPriceCalculator({
   marketRate,
   apmcPrice,
   onResult,
+  lang = "en",
 }) {
   const [open, setOpen] = useState(false);
 
@@ -401,13 +465,13 @@ export function SmartPriceCalculator({
   const headerText =
     harvestType === "single_harvest"
       ? singleHarvestEstimate
-        ? `Auto cost ${money(singleHarvestEstimate.costPerKg)}/kg · Safe floor ${money(singleHarvestEstimate.minBid)}/kg`
-        : "Enter crop and quantity to auto-estimate safe pricing"
+        ? pick(lang, `Auto cost ${money(singleHarvestEstimate.costPerKg)}/kg · Safe floor ${money(singleHarvestEstimate.minBid)}/kg`, `ಸ್ವಯಂ ವೆಚ್ಚ ${money(singleHarvestEstimate.costPerKg)}/ಕೆಜಿ · ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆ ${money(singleHarvestEstimate.minBid)}/ಕೆಜಿ`)
+        : pick(lang, "Enter crop and quantity to auto-estimate safe pricing", "ಸುರಕ್ಷಿತ ಬೆಲೆಯನ್ನು ಸ್ವಯಂ ಲೆಕ್ಕಿಸಲು ಬೆಳೆ ಮತ್ತು ಪ್ರಮಾಣವನ್ನು ನಮೂದಿಸಿ")
       : harvestType === "regrows"
         ? regrowthGuidance?.referencePrice
-          ? `Manual price mode around live market ${money(regrowthGuidance.referencePrice)}/kg`
-          : "Set your own price using live market guidance"
-        : "Choose a harvest type first";
+          ? pick(lang, `Manual price mode around live market ${money(regrowthGuidance.referencePrice)}/kg`, `ಲೈವ್ ಮಾರುಕಟ್ಟೆ ${money(regrowthGuidance.referencePrice)}/ಕೆಜಿ ಸುತ್ತ ಕೈಯಾರೆ ಬೆಲೆ ವಿಧಾನ`)
+          : pick(lang, "Set your own price using live market guidance", "ಲೈವ್ ಮಾರುಕಟ್ಟೆ ಮಾರ್ಗದರ್ಶನದಿಂದ ನಿಮ್ಮದೇ ಬೆಲೆಯನ್ನು ನಿಗದಿಪಡಿಸಿ")
+        : pick(lang, "Choose a harvest type first", "ಮೊದಲು ಕೊಯ್ಲಿನ ರೀತಿಯನ್ನು ಆರಿಸಿ");
 
   return (
     <div style={{ background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)", border: "1.5px solid #86efac", borderRadius: 14, overflow: "hidden" }}>
@@ -421,7 +485,9 @@ export function SmartPriceCalculator({
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 13, color: "#15803d" }}>
-              {harvestType === "single_harvest" ? "Auto Effort Pricing" : "Manual Market Guidance"}
+              {harvestType === "single_harvest"
+                ? pick(lang, "Auto Effort Pricing", "ಸ್ವಯಂ ಶ್ರಮ ಬೆಲೆಗಣನೆ")
+                : pick(lang, "Manual Market Guidance", "ಕೈಯಾರೆ ಮಾರುಕಟ್ಟೆ ಮಾರ್ಗದರ್ಶನ")}
             </div>
             <div style={{ fontSize: 11, color: "#4b7a4e", marginTop: 1 }}>{headerText}</div>
           </div>
@@ -429,7 +495,7 @@ export function SmartPriceCalculator({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {harvestType === "single_harvest" && singleHarvestEstimate && (
             <span style={{ fontSize: 11, fontWeight: 800, background: "#16a34a", color: "#fff", padding: "2px 9px", borderRadius: 10 }}>
-              {money(singleHarvestEstimate.minBid)}/kg safe
+              {money(singleHarvestEstimate.minBid)}/{pick(lang, "kg safe", "ಕೆಜಿ ಸುರಕ್ಷಿತ")}
             </span>
           )}
           <span style={{ fontSize: 16, color: "#16a34a", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform .2s" }}>▼</span>
@@ -440,7 +506,7 @@ export function SmartPriceCalculator({
         <div style={{ padding: "0 16px 18px", borderTop: "1px solid #bbf7d0" }}>
           {!harvestType && (
             <div style={{ padding: "16px 0 2px", fontSize: 13, color: "#4b7a4e", lineHeight: 1.55 }}>
-              Select a harvest type first. Regrowing crops stay in manual pricing mode, while single-harvest crops get automatic effort-cost estimation.
+              {pick(lang, "Select a harvest type first. Regrowing crops stay in manual pricing mode, while single-harvest crops get automatic effort-cost estimation.", "ಮೊದಲು ಕೊಯ್ಲಿನ ರೀತಿಯನ್ನು ಆರಿಸಿ. ಮರುಬೆಳೆಯುವ ಬೆಳೆಗಳು ಕೈಯಾರೆ ಬೆಲೆ ವಿಧಾನದಲ್ಲೇ ಇರುತ್ತವೆ; ಒಮ್ಮೆ ಕೊಯ್ಲು ಬೆಳೆಗಳಿಗೆ ಸ್ವಯಂ ಶ್ರಮ ವೆಚ್ಚ ಲೆಕ್ಕ ಬರುತ್ತದೆ.")}
             </div>
           )}
 
@@ -448,35 +514,35 @@ export function SmartPriceCalculator({
             <div style={{ paddingTop: 14 }}>
               <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 7 }}>
-                  Regrowing Crop Mode
+                  {pick(lang, "Regrowing Crop Mode", "ಮರುಬೆಳೆಯುವ ಬೆಳೆ ವಿಧಾನ")}
                 </div>
                 <div style={{ fontSize: 13, color: "#1a2e1c", lineHeight: 1.55 }}>
-                  Since this crop can bear again from the same plant, the app does not add replanting cost. The farmer sets the minimum bid directly, and we only show live market guidance.
+                  {pick(lang, "Since this crop can bear again from the same plant, the app does not add replanting cost. The farmer sets the minimum bid directly, and we only show live market guidance.", "ಈ ಬೆಳೆ ಅದೇ ಸಸ್ಯದಿಂದ ಮತ್ತೆ ಫಲ ಕೊಡಬಹುದಾದ್ದರಿಂದ, ಅಪ್ಲಿಕೇಶನ್ ಮರು ನೆಡುವ ವೆಚ್ಚವನ್ನು ಸೇರಿಸುವುದಿಲ್ಲ. ರೈತರು ಕನಿಷ್ಠ ಬಿಡ್ ಅನ್ನು ನೇರವಾಗಿ ನಿಗದಿಪಡಿಸುತ್ತಾರೆ; ನಾವು ಲೈವ್ ಮಾರುಕಟ್ಟೆ ಮಾರ್ಗದರ್ಶನವನ್ನಷ್ಟೇ ತೋರಿಸುತ್ತೇವೆ.")}
                 </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
                 <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>Live market</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Live market", "ಲೈವ್ ಮಾರುಕಟ್ಟೆ")}</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "#15803d", marginTop: 5 }}>{money(regrowthGuidance.referencePrice)}</div>
-                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>per kg reference</div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{pick(lang, "per kg reference", "ಪ್ರತಿ ಕೆಜಿ ಸೂಚಕ")}</div>
                 </div>
                 <div style={{ background: regrowthGuidance.demand.bg, border: `1px solid ${regrowthGuidance.demand.border}`, borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: regrowthGuidance.demand.tone, textTransform: "uppercase", letterSpacing: 0.5 }}>Demand</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: regrowthGuidance.demand.tone, marginTop: 6 }}>{regrowthGuidance.demand.level}</div>
-                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{regrowthGuidance.demand.pulse}</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: regrowthGuidance.demand.tone, textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Demand", "ಬೇಡಿಕೆ")}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: regrowthGuidance.demand.tone, marginTop: 6 }}>{tDemandLevel(regrowthGuidance.demand.level, lang)}</div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{tDemandPulse(regrowthGuidance.demand.pulse, lang)}</div>
                 </div>
                 <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>Baseline shift</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b7a4e", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Baseline shift", "ಆಧಾರ ಬದಲಾವಣೆ")}</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: regrowthGuidance.demand.vsBasePct >= 0 ? "#15803d" : "#dc2626", marginTop: 5 }}>
                     {regrowthGuidance.demand.vsBasePct >= 0 ? "+" : ""}{regrowthGuidance.demand.vsBasePct}%
                   </div>
-                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>vs base market price</div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{pick(lang, "vs base market price", "ಆಧಾರ ಮಾರುಕಟ್ಟೆ ದರದ ವಿರುದ್ಧ")}</div>
                 </div>
               </div>
 
               <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 12, color: "#4b7a4e", lineHeight: 1.55 }}>
-                Approx recurring farm cost for profit tracking: <strong>{money(regrowthGuidance.estimatedCostPerKg)}/kg</strong>. This keeps seed and full replanting cost out, but still counts labour, crop care and harvest effort.
+                {pick(lang, "Approx recurring farm cost for profit tracking", "ಲಾಭದ ದಾಖಲೆಗೆ ಅಂದಾಜು ಮರುಕಳಿಸುವ ಕೃಷಿ ವೆಚ್ಚ")}: <strong>{money(regrowthGuidance.estimatedCostPerKg)}/{pick(lang, "kg", "ಕೆಜಿ")}</strong>. {pick(lang, "This keeps seed and full replanting cost out, but still counts labour, crop care and harvest effort.", "ಇದು ಬೀಜ ಮತ್ತು ಸಂಪೂರ್ಣ ಮರು ನೆಡುವ ವೆಚ್ಚವನ್ನು ಹೊರಗಿಡುತ್ತದೆ, ಆದರೆ ಕಾರ್ಮಿಕ, ಬೆಳೆ ಆರೈಕೆ ಮತ್ತು ಕೊಯ್ಲಿನ ಶ್ರಮವನ್ನು ಲೆಕ್ಕಿಸುತ್ತದೆ.")}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
@@ -487,9 +553,9 @@ export function SmartPriceCalculator({
                     onClick={() => applyRegrowthPrice(preset.price, preset)}
                     style={{ background: "#fff", border: "1.5px solid #86efac", borderRadius: 12, padding: "14px 12px", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}
                   >
-                    <div style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>{preset.label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: "#1a2e1c", margin: "6px 0 5px" }}>{money(preset.price)}/kg</div>
-                    <div style={{ fontSize: 11, color: "#4b7a4e", lineHeight: 1.45 }}>{preset.hint}</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>{tPresetLabel(preset.label, lang)}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "#1a2e1c", margin: "6px 0 5px" }}>{money(preset.price)}/{pick(lang, "kg", "ಕೆಜಿ")}</div>
+                    <div style={{ fontSize: 11, color: "#4b7a4e", lineHeight: 1.45 }}>{tPresetHint(preset.hint, lang)}</div>
                   </button>
                 ))}
               </div>
@@ -500,7 +566,7 @@ export function SmartPriceCalculator({
             <div style={{ paddingTop: 14 }}>
               {!singleHarvestEstimate && (
                 <div style={{ fontSize: 13, color: "#4b7a4e", lineHeight: 1.55 }}>
-                  Enter the crop quantity to generate the automatic effort-cost model.
+                  {pick(lang, "Enter the crop quantity to generate the automatic effort-cost model.", "ಸ್ವಯಂ ಶ್ರಮ ವೆಚ್ಚ ಮಾದರಿಯನ್ನು ರಚಿಸಲು ಬೆಳೆಯ ಪ್ರಮಾಣವನ್ನು ನಮೂದಿಸಿ.")}
                 </div>
               )}
 
@@ -508,49 +574,49 @@ export function SmartPriceCalculator({
                 <>
                   <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
                     <div style={{ fontSize: 11, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 7 }}>
-                      Single Harvest Auto Model
+                      {pick(lang, "Single Harvest Auto Model", "ಒಮ್ಮೆ ಕೊಯ್ಲು ಸ್ವಯಂ ಮಾದರಿ")}
                     </div>
                     <div style={{ fontSize: 13, color: "#1a2e1c", lineHeight: 1.55 }}>
-                      This crop needs replanting for the next cycle, so the farmer does not enter costs manually. The app estimates effort cost from crop type, quantity and live market demand, then calculates a safe profitable floor price.
+                      {pick(lang, "This crop needs replanting for the next cycle, so the farmer does not enter costs manually. The app estimates effort cost from crop type, quantity and live market demand, then calculates a safe profitable floor price.", "ಈ ಬೆಳೆ ಮುಂದಿನ ಚಕ್ರಕ್ಕೆ ಮರು ನೆಡುವಿಕೆಯನ್ನು ಅಗತ್ಯಪಡಿಸುತ್ತದೆ, ಆದ್ದರಿಂದ ರೈತರು ವೆಚ್ಚವನ್ನು ಕೈಯಾರೆ ನಮೂದಿಸುವುದಿಲ್ಲ. ಅಪ್ಲಿಕೇಶನ್ ಬೆಳೆ ಪ್ರಕಾರ, ಪ್ರಮಾಣ ಮತ್ತು ಲೈವ್ ಮಾರುಕಟ್ಟೆ ಬೇಡಿಕೆಯ ಆಧಾರದ ಮೇಲೆ ಶ್ರಮ ವೆಚ್ಚವನ್ನು ಅಂದಾಜಿಸಿ, ಸುರಕ್ಷಿತ ಲಾಭದಾಯಕ ನೆಲೆಬೆಲೆಯನ್ನು ಲೆಕ್ಕಿಸುತ್ತದೆ.")}
                     </div>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
                     <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Effort cost</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Effort cost", "ಶ್ರಮ ವೆಚ್ಚ")}</div>
                       <div style={{ fontSize: 21, fontWeight: 800, color: "#dc2626", marginTop: 5 }}>{money(singleHarvestEstimate.costPerKg)}</div>
-                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>per kg</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{pick(lang, "per kg", "ಪ್ರತಿ ಕೆಜಿ")}</div>
                     </div>
                     <div style={{ background: singleHarvestEstimate.demandInsights.bg, border: `1px solid ${singleHarvestEstimate.demandInsights.border}`, borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: singleHarvestEstimate.demandInsights.tone, textTransform: "uppercase", letterSpacing: 0.5 }}>Demand</div>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: singleHarvestEstimate.demandInsights.tone, marginTop: 6 }}>{singleHarvestEstimate.demandInsights.level}</div>
-                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{singleHarvestEstimate.demandInsights.pulse}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: singleHarvestEstimate.demandInsights.tone, textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Demand", "ಬೇಡಿಕೆ")}</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: singleHarvestEstimate.demandInsights.tone, marginTop: 6 }}>{tDemandLevel(singleHarvestEstimate.demandInsights.level, lang)}</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{tDemandPulse(singleHarvestEstimate.demandInsights.pulse, lang)}</div>
                     </div>
                     <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Safe floor</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Safe floor", "ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆ")}</div>
                       <div style={{ fontSize: 21, fontWeight: 800, color: "#15803d", marginTop: 5 }}>{money(singleHarvestEstimate.minBid)}</div>
-                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>No-loss profitable bid</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{pick(lang, "No-loss profitable bid", "ನಷ್ಟವಿಲ್ಲದ ಲಾಭದ ಬಿಡ್")}</div>
                     </div>
                     <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Expected close</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{pick(lang, "Expected close", "ನಿರೀಕ್ಷಿತ ಅಂತಿಮ ಬೆಲೆ")}</div>
                       <div style={{ fontSize: 21, fontWeight: 800, color: "#d97706", marginTop: 5 }}>{money(singleHarvestEstimate.expectedPrice)}</div>
-                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>Healthy target price</div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{pick(lang, "Healthy target price", "ಆರೋಗ್ಯಕರ ಗುರಿ ದರ")}</div>
                     </div>
                   </div>
 
                   <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>Approximate effort breakdown</div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>{pick(lang, "Approximate effort breakdown", "ಅಂದಾಜು ಶ್ರಮ ವಿಭಾಗ")}</div>
                       <div style={{ fontSize: 11, color: "#4b7a4e" }}>
-                        Total season effort: <strong>{money(singleHarvestEstimate.totalProductionCost)}</strong>
+                        {pick(lang, "Total season effort", "ಒಟ್ಟು ಹಂಗಾಮಿನ ಶ್ರಮ")}: <strong>{money(singleHarvestEstimate.totalProductionCost)}</strong>
                       </div>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       {Object.entries(singleHarvestEstimate.costBreakdown).map(([key, item]) => (
                         <div key={key} style={{ background: "#f8fffb", border: "1px solid #dcfce7", borderRadius: 10, padding: "10px 12px" }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "#1a2e1c" }}>{BREAKDOWN_LABELS[key]}</div>
-                          <div style={{ fontSize: 18, fontWeight: 800, color: "#15803d", marginTop: 4 }}>{money(item.perKg)}/kg</div>
-                          <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{money(item.total)} total · {item.sharePct}% share</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#1a2e1c" }}>{tBreakdownLabel(BREAKDOWN_LABELS[key], lang)}</div>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: "#15803d", marginTop: 4 }}>{money(item.perKg)}/{pick(lang, "kg", "ಕೆಜಿ")}</div>
+                          <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{money(item.total)} {pick(lang, "total", "ಒಟ್ಟು")} · {item.sharePct}% {pick(lang, "share", "ಹಂಚಿಕೆ")}</div>
                         </div>
                       ))}
                     </div>
@@ -561,7 +627,7 @@ export function SmartPriceCalculator({
                     onClick={applySingleHarvestPrice}
                     style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: "#16a34a", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
                   >
-                    Apply safe floor {money(singleHarvestEstimate.minBid)}/kg and save retailer transparency
+                    {pick(lang, "Apply safe floor", "ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆ ಅನ್ವಯಿಸಿ")} {money(singleHarvestEstimate.minBid)}/{pick(lang, "kg", "ಕೆಜಿ")} {pick(lang, "and save wholesaler transparency", "ಮತ್ತು ಸಗಟು ಪಾರದರ್ಶಕತೆಯನ್ನು ಉಳಿಸಿ")}
                   </button>
                 </>
               )}
@@ -573,7 +639,7 @@ export function SmartPriceCalculator({
   );
 }
 
-export function BidInsight({ bidAmount, crop, role }) {
+export function BidInsight({ bidAmount, crop, role, lang = "en" }) {
   if (!crop.costPerKg || crop.costPerKg === 0) return null;
 
   const costPkg = Number(crop.costPerKg);
@@ -589,57 +655,57 @@ export function BidInsight({ bidAmount, crop, role }) {
   let bg = "#f0fdf4";
   let border = "#86efac";
   let icon = "🟢";
-  let msg = `${profitPct.toFixed(0)}% profit - great deal for farmer`;
+  let msg = pick(lang, `${profitPct.toFixed(0)}% profit - great deal for farmer`, `${profitPct.toFixed(0)}% ಲಾಭ - ರೈತನಿಗೆ ಒಳ್ಳೆಯ ಒಪ್ಪಂದ`);
 
   if (profitPct < 25) {
     color = "#92400e";
     bg = "#fffbeb";
     border = "#fde68a";
     icon = "🟡";
-    msg = `${profitPct.toFixed(0)}% profit - fair but not strong`;
+    msg = pick(lang, `${profitPct.toFixed(0)}% profit - fair but not strong`, `${profitPct.toFixed(0)}% ಲಾಭ - ನ್ಯಾಯವಾದರೂ ಬಹಳ ಬಲವಾಗಿಲ್ಲ`);
   }
   if (profitPct < 10) {
     color = "#c2410c";
     bg = "#fff7ed";
     border = "#fed7aa";
     icon = "🟠";
-    msg = "Close to cost price - little safety for farmer";
+    msg = pick(lang, "Close to cost price - little safety for farmer", "ವೆಚ್ಚದ ದರದ ಹತ್ತಿರ - ರೈತನಿಗೆ ಕಡಿಮೆ ರಕ್ಷಣೆ");
   }
   if (profitPct < 0) {
     color = "#dc2626";
     bg = "#fef2f2";
     border = "#fca5a5";
     icon = "🔴";
-    msg = `Below effort cost by ${money(Math.abs(profitAmt))}/kg`;
+    msg = pick(lang, `Below effort cost by ${money(Math.abs(profitAmt))}/kg`, `${money(Math.abs(profitAmt))}/ಕೆಜಿ ಮಟ್ಟಿಗೆ ಶ್ರಮ ವೆಚ್ಚಕ್ಕಿಂತ ಕಡಿಮೆ`);
   }
 
   if (role === "retailer") {
     return (
       <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 14px", marginTop: 8 }}>
         <div style={{ fontSize: 11, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 7 }}>
-          {icon} Farmer effort transparency
+          {icon} {pick(lang, "Farmer effort transparency", "ರೈತರ ಶ್ರಮ ಪಾರದರ್ಶಕತೆ")}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>Cost/kg</div>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>{pick(lang, "Cost/kg", "ವೆಚ್ಚ/ಕೆಜಿ")}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626" }}>{money(costPkg)}</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>Safe floor</div>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>{pick(lang, "Safe floor", "ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆ")}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#15803d" }}>{money(safeFloor)}</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>Target close</div>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>{pick(lang, "Target close", "ಗುರಿ ಅಂತಿಮ ದರ")}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#d97706" }}>{money(targetClose || safeFloor)}</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>This bid</div>
+            <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase" }}>{pick(lang, "This bid", "ಈ ಬಿಡ್")}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color }}>{money(bidAmount)}</div>
           </div>
         </div>
         <div style={{ fontSize: 11, color: "#4b7a4e", marginTop: 8, lineHeight: 1.5 }}>
-          {gapToSafe >= 0 ? `This bid is ${money(gapToSafe)} above the safe floor.` : `This bid is ${money(Math.abs(gapToSafe))} below the safe floor.`}
-          {crop.demandInsights?.level ? ` Demand right now: ${crop.demandInsights.level}.` : ""}
+          {gapToSafe >= 0 ? pick(lang, `This bid is ${money(gapToSafe)} above the safe floor.`, `ಈ ಬಿಡ್ ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆಯಿಗಿಂತ ${money(gapToSafe)} ಹೆಚ್ಚು.`) : pick(lang, `This bid is ${money(Math.abs(gapToSafe))} below the safe floor.`, `ಈ ಬಿಡ್ ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆಯಿಗಿಂತ ${money(Math.abs(gapToSafe))} ಕಡಿಮೆ.`)}
+          {crop.demandInsights?.level ? pick(lang, ` Demand right now: ${crop.demandInsights.level}.`, ` ಈಗಿನ ಬೇಡಿಕೆ: ${tDemandLevel(crop.demandInsights.level, lang)}.`) : ""}
         </div>
       </div>
     );
@@ -651,19 +717,19 @@ export function BidInsight({ bidAmount, crop, role }) {
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color }}>{msg}</div>
         <div style={{ fontSize: 11, color: "#6b8f6e", marginTop: 2 }}>
-          {gapToSafe >= 0 ? `Above safe floor by ${money(gapToSafe)}` : `Below safe floor by ${money(Math.abs(gapToSafe))}`}
-          {vsApmc !== null ? ` · ${vsApmc >= 0 ? "+" : ""}${vsApmc.toFixed(0)}% vs APMC` : ""}
+          {gapToSafe >= 0 ? pick(lang, `Above safe floor by ${money(gapToSafe)}`, `ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆಯಿಗಿಂತ ${money(gapToSafe)} ಮೇಲೆ`) : pick(lang, `Below safe floor by ${money(Math.abs(gapToSafe))}`, `ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆಯಿಗಿಂತ ${money(Math.abs(gapToSafe))} ಕೆಳಗೆ`)}
+          {vsApmc !== null ? pick(lang, ` · ${vsApmc >= 0 ? "+" : ""}${vsApmc.toFixed(0)}% vs APMC`, ` · ಎಪಿಎಂಸಿಗೆ ಹೋಲಿಸಿ ${vsApmc >= 0 ? "+" : ""}${vsApmc.toFixed(0)}%`) : ""}
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div style={{ fontSize: 16, fontWeight: 800, color }}>{profitAmt >= 0 ? "+" : "-"}{money(Math.abs(profitAmt))}</div>
-        <div style={{ fontSize: 9, color: "#6b7280" }}>per kg margin</div>
+        <div style={{ fontSize: 9, color: "#6b7280" }}>{pick(lang, "per kg margin", "ಪ್ರತಿ ಕೆಜಿ ಲಾಭಾಂಶ")}</div>
       </div>
     </div>
   );
 }
 
-export function CostBadge({ crop }) {
+export function CostBadge({ crop, lang = "en" }) {
   if (!crop.costPerKg) return null;
 
   const costPkg = Number(crop.costPerKg);
@@ -675,24 +741,24 @@ export function CostBadge({ crop }) {
   return (
     <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 9, padding: "8px 11px", marginBottom: 8 }}>
       <div style={{ fontSize: 10, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-        🧠 Auto effort model for retailer
+        🧠 {pick(lang, "Auto effort model for wholesaler", "ಸಗಟುಗಾಗಿ ಸ್ವಯಂ ಶ್ರಮ ಮಾದರಿ")}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
         <div>
-          <div style={{ fontSize: 9, color: "#6b7280" }}>Cost/kg</div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>{pick(lang, "Cost/kg", "ವೆಚ್ಚ/ಕೆಜಿ")}</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#dc2626" }}>{money(costPkg)}</div>
         </div>
         <div>
-          <div style={{ fontSize: 9, color: "#6b7280" }}>Safe floor</div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>{pick(lang, "Safe floor", "ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆ")}</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#15803d" }}>{money(safeFloor)}</div>
         </div>
         <div>
-          <div style={{ fontSize: 9, color: "#6b7280" }}>Demand</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: crop.demandInsights?.tone || "#1a2e1c" }}>{crop.demandInsights?.level || "Live"}</div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>{pick(lang, "Demand", "ಬೇಡಿಕೆ")}</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: crop.demandInsights?.tone || "#1a2e1c" }}>{crop.demandInsights?.level ? tDemandLevel(crop.demandInsights.level, lang) : pick(lang, "Live", "ಲೈವ್")}</div>
         </div>
         <div>
-          <div style={{ fontSize: 9, color: "#6b7280" }}>Target close</div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>{pick(lang, "Target close", "ಗುರಿ ಅಂತಿಮ ದರ")}</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#d97706" }}>{money(targetClose || safeFloor)}</div>
         </div>
       </div>
@@ -701,21 +767,21 @@ export function CostBadge({ crop }) {
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
           {topItems.map(([key, item]) => (
             <span key={key} style={{ background: "#fff", border: "1px solid #dcfce7", borderRadius: 999, padding: "3px 8px", fontSize: 10, color: "#4b7a4e" }}>
-              {BREAKDOWN_LABELS[key]} {money(item.perKg)}/kg
+              {tBreakdownLabel(BREAKDOWN_LABELS[key], lang)} {money(item.perKg)}/{pick(lang, "kg", "ಕೆಜಿ")}
             </span>
           ))}
         </div>
       )}
 
       <div style={{ fontSize: 10, color: "#4b7a4e", marginTop: 7, lineHeight: 1.5 }}>
-        Safe floor protects roughly {minProfit.toFixed(0)}% margin above estimated effort cost.
-        {crop.demandInsights?.approxModel ? ` ${crop.demandInsights.approxModel}.` : ""}
+        {pick(lang, `Safe floor protects roughly ${minProfit.toFixed(0)}% margin above estimated effort cost.`, `ಸುರಕ್ಷಿತ ನೆಲೆಬೆಲೆ ಅಂದಾಜು ಶ್ರಮ ವೆಚ್ಚದ ಮೇಲೆ ಸುಮಾರು ${minProfit.toFixed(0)}% ಲಾಭಾಂಶವನ್ನು ಕಾಪಾಡುತ್ತದೆ.`)}
+        {crop.demandInsights?.approxModel ? ` ${pick(lang, crop.demandInsights.approxModel, "ಲೈವ್ ಮಾರುಕಟ್ಟೆ ಬೇಡಿಕೆ, ಬೆಳೆ ಪ್ರಕಾರ ಮತ್ತು ಪ್ರಮಾಣದ ಆಧಾರದ ಮೇಲೆ ಲೆಕ್ಕಿಸಲಾಗಿದೆ")}.` : ""}
       </div>
     </div>
   );
 }
 
-export function FarmerProfitHint({ crop, marketRate }) {
+export function FarmerProfitHint({ crop, marketRate, lang = "en" }) {
   const qty = Math.max(1, Number(crop.quantity) || 0);
   const safeFloor = Number(crop.demandInsights?.recommendedFloor || crop.minBid || 0);
   const acceptedPrice = Number(crop.acceptedPrice || 0);
@@ -736,11 +802,11 @@ export function FarmerProfitHint({ crop, marketRate }) {
   let tone = "#15803d";
   let bg = "#f0fdf4";
   let border = "#86efac";
-  let badge = "Good";
+  let badge = pick(lang, "Good", "ಉತ್ತಮ");
   let headline = "";
   let detail = "";
   let amount = 0;
-  let amountLabel = "expected gain";
+  let amountLabel = pick(lang, "expected gain", "ನಿರೀಕ್ಷಿತ ಲಾಭ");
 
   if (estimatedCost > 0) {
     const costPkg = estimatedCost;
@@ -749,38 +815,38 @@ export function FarmerProfitHint({ crop, marketRate }) {
 
     amount = Math.max(gainPerKg * qty, 0);
     headline = acceptedPrice
-      ? `This order may earn about ${money(amount)} for you`
-      : `Near this price, you may earn about ${money(amount)}`;
+      ? pick(lang, `This order may earn about ${money(amount)} for you`, `ಈ ಆದೇಶವು ನಿಮಗೆ ಸುಮಾರು ${money(amount)} ಲಾಭ ತಂದುಕೊಡಬಹುದು`)
+      : pick(lang, `Near this price, you may earn about ${money(amount)}`, `ಈ ದರದ ಬಳಿ ನೀವು ಸುಮಾರು ${money(amount)} ಗಳಿಸಬಹುದು`);
     detail = acceptedPrice
-      ? `Accepted at ${money(targetPrice)}/kg. Try to stay above ${money(safeFloor)}/kg on similar crops.`
-      : `Good to accept near ${money(targetPrice)}/kg. Try not to go below ${money(safeFloor)}/kg.`;
+      ? pick(lang, `Accepted at ${money(targetPrice)}/kg. Try to stay above ${money(safeFloor)}/kg on similar crops.`, `${money(targetPrice)}/ಕೆಜಿ ದರದಲ್ಲಿ ಅಂಗೀಕರಿಸಲಾಗಿದೆ. ಇಂತಹ ಬೆಳೆಗಳಲ್ಲಿ ${money(safeFloor)}/ಕೆಜಿ ಮೇಲಾಗಿರಲು ಪ್ರಯತ್ನಿಸಿ.`)
+      : pick(lang, `Good to accept near ${money(targetPrice)}/kg. Try not to go below ${money(safeFloor)}/kg.`, `${money(targetPrice)}/ಕೆಜಿ ಹತ್ತಿರ ಅಂಗೀಕರಿಸುವುದು ಚೆನ್ನಾಗಿದೆ. ${money(safeFloor)}/ಕೆಜಿ ಕೆಳಗೆ ಹೋಗಬೇಡಿ.`);
 
     if (marginPct < 25) {
       tone = "#92400e";
       bg = "#fffbeb";
       border = "#fde68a";
-      badge = "Fair";
+      badge = pick(lang, "Fair", "ಸರಿ");
     }
     if (marginPct < 10) {
       tone = "#c2410c";
       bg = "#fff7ed";
       border = "#fed7aa";
-      badge = "Low";
+      badge = pick(lang, "Low", "ಕಡಿಮೆ");
       detail = acceptedPrice
-        ? `Accepted close to cost. Try to stay above ${money(safeFloor)}/kg next time.`
-        : `This is close to cost. Try to stay near ${money(safeFloor)}/kg or above.`;
+        ? pick(lang, `Accepted close to cost. Try to stay above ${money(safeFloor)}/kg next time.`, `ವೆಚ್ಚದ ಹತ್ತಿರ ಅಂಗೀಕರಿಸಲಾಗಿದೆ. ಮುಂದಿನ ಬಾರಿ ${money(safeFloor)}/ಕೆಜಿ ಮೇಲಾಗಿರಲು ಪ್ರಯತ್ನಿಸಿ.`)
+        : pick(lang, `This is close to cost. Try to stay near ${money(safeFloor)}/kg or above.`, `ಇದು ವೆಚ್ಚದ ಹತ್ತಿರವಾಗಿದೆ. ${money(safeFloor)}/ಕೆಜಿ ಹತ್ತಿರ ಅಥವಾ ಮೇಲಾಗಿರಲು ಪ್ರಯತ್ನಿಸಿ.`);
     }
     if (marginPct < 0) {
       tone = "#dc2626";
       bg = "#fef2f2";
       border = "#fca5a5";
-      badge = "Risk";
+      badge = pick(lang, "Risk", "ಅಪಾಯ");
       amount = Math.abs(gainPerKg * qty);
-      amountLabel = "possible loss";
+      amountLabel = pick(lang, "possible loss", "ಸಂಭವನೀಯ ನಷ್ಟ");
       headline = acceptedPrice
-        ? `This order is about ${money(amount)} below effort cost`
-        : `This price can drop about ${money(amount)} below effort cost`;
-      detail = `Try to stay above ${money(safeFloor)}/kg before accepting.`;
+        ? pick(lang, `This order is about ${money(amount)} below effort cost`, `ಈ ಆದೇಶವು ಶ್ರಮ ವೆಚ್ಚಕ್ಕಿಂತ ಸುಮಾರು ${money(amount)} ಕಡಿಮೆಯಾಗಿದೆ`)
+        : pick(lang, `This price can drop about ${money(amount)} below effort cost`, `ಈ ಬೆಲೆ ಶ್ರಮ ವೆಚ್ಚಕ್ಕಿಂತ ಸುಮಾರು ${money(amount)} ಕಡಿಮೆಯಾಗಬಹುದು`);
+      detail = pick(lang, `Try to stay above ${money(safeFloor)}/kg before accepting.`, `ಅಂಗೀಕರಿಸುವ ಮೊದಲು ${money(safeFloor)}/ಕೆಜಿ ಮೇಲಾಗಿರಲು ಪ್ರಯತ್ನಿಸಿ.`);
     }
   } else {
     const floorPrice = Number(crop.minBid || 0);
@@ -788,27 +854,27 @@ export function FarmerProfitHint({ crop, marketRate }) {
     const premiumPct = floorPrice > 0 ? ((targetPrice - floorPrice) / floorPrice) * 100 : 0;
 
     amount = extraAboveFloor;
-    amountLabel = "above your floor";
+    amountLabel = pick(lang, "above your floor", "ನಿಮ್ಮ ನೆಲೆಬೆಲೆಯ ಮೇಲೆ");
     headline = extraAboveFloor > 0
       ? acceptedPrice
-        ? `This order is about ${money(extraAboveFloor)} above your floor`
-        : `This price can add about ${money(extraAboveFloor)} above your floor`
-      : "This price stays close to your floor";
+        ? pick(lang, `This order is about ${money(extraAboveFloor)} above your floor`, `ಈ ಆದೇಶವು ನಿಮ್ಮ ನೆಲೆಬೆಲೆಯಿಗಿಂತ ಸುಮಾರು ${money(extraAboveFloor)} ಹೆಚ್ಚು`)
+        : pick(lang, `This price can add about ${money(extraAboveFloor)} above your floor`, `ಈ ಬೆಲೆ ನಿಮ್ಮ ನೆಲೆಬೆಲೆಯಿಗಿಂತ ಸುಮಾರು ${money(extraAboveFloor)} ಹೆಚ್ಚಿಸಬಹುದು`)
+      : pick(lang, "This price stays close to your floor", "ಈ ಬೆಲೆ ನಿಮ್ಮ ನೆಲೆಬೆಲೆಯ ಹತ್ತಿರದಲ್ಲೇ ಇರುತ್ತದೆ");
     detail = livePrice > 0
-      ? `Live mandi is around ${money(livePrice)}/kg.`
-      : "Set near the live market for a faster sale.";
+      ? pick(lang, `Live mandi is around ${money(livePrice)}/kg.`, `ಲೈವ್ ಮಂಡಿ ದರ ಸುಮಾರು ${money(livePrice)}/ಕೆಜಿ.`)
+      : pick(lang, "Set near the live market for a faster sale.", "ವೇಗವಾದ ಮಾರಾಟಕ್ಕಾಗಿ ಲೈವ್ ಮಾರುಕಟ್ಟೆ ಹತ್ತಿರದಲ್ಲೇ ನಿಗದಿಪಡಿಸಿ.");
 
     if (premiumPct < 8) {
       tone = "#92400e";
       bg = "#fffbeb";
       border = "#fde68a";
-      badge = "Fair";
+      badge = pick(lang, "Fair", "ಸರಿ");
     }
     if (premiumPct < 3) {
       tone = "#6b7280";
       bg = "#f8fafc";
       border = "#dbe5ef";
-      badge = "Near floor";
+      badge = pick(lang, "Near floor", "ನೆಲೆಬೆಲೆ ಹತ್ತಿರ");
     }
   }
 
@@ -817,7 +883,7 @@ export function FarmerProfitHint({ crop, marketRate }) {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: tone, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            Farmer profit guide
+            {pick(lang, "Farmer profit guide", "ರೈತರ ಲಾಭ ಮಾರ್ಗದರ್ಶಿ")}
           </div>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginTop: 5, lineHeight: 1.45 }}>
             {headline}

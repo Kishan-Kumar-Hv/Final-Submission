@@ -1,10 +1,20 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar.jsx";
 import JobCard from "./JobCard.jsx";
-import { StatCard, Empty, Btn } from "./UI.jsx";
+import { Empty, Btn } from "./UI.jsx";
 import { S_ICON, NEXT_S } from "../data/constants.js";
 import { fmtP } from "../utils/helpers.js";
 import { pick, tCrop, tLocation, tStatus } from "../i18n.js";
+
+function DispatchStat({ label, value, sub, tone = "#41546f", bg = "#fff", border = "#d8deea" }) {
+  return (
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 18, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: "var(--text4)", textTransform: "uppercase", letterSpacing: 0.55 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: tone, marginTop: 8, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 6, lineHeight: 1.45 }}>{sub}</div>}
+    </div>
+  );
+}
 
 export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup, onReleaseRoute, onUpdateStatus, onDeleteJob, toast, addActivity, lang }) {
   const [view, setView] = useState("available");
@@ -15,6 +25,10 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup,
   const active    = myJobs.filter(j => j.status !== "delivered");
   const done      = myJobs.filter(j => j.status === "delivered");
   const payoutEarned = done.reduce((sum, job) => sum + (job.deliveryPayout || 0), 0);
+  const payoutReady = available.reduce((sum, job) => sum + (job.deliveryPayout || 0), 0);
+  const avgPayout = available.length ? fmtP(Math.round(payoutReady / available.length)) : "₹0";
+  const totalRouteKm = active.reduce((sum, job) => sum + Number(job.routeKm || 0), 0);
+  const avgRouteKm = active.length ? `${Math.round(totalRouteKm / active.length)} km` : pick(lang, "No live route", "ಸಕ್ರಿಯ ಮಾರ್ಗವಿಲ್ಲ");
 
   const nav = [
     { k: "available", i: "📋", l: pick(lang, "Available Jobs", "ಲಭ್ಯ ಕಾರ್ಯಗಳು"), b: available.length },
@@ -29,34 +43,47 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup,
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "calc(100vh - 100px)" }}>
+    <div className="rr-dashboard-shell" style={{ display: "flex", minHeight: "calc(100vh - 100px)" }}>
       <Sidebar user={user} view={view} setView={setView} navItems={nav} lang={lang} />
 
-      <main style={{ flex: 1, padding: 28, overflowY: "auto", maxHeight: "calc(100vh - 100px)", background: "var(--bg)" }}>
+      <main className="rr-dashboard-main" style={{ flex: 1, padding: 28, overflowY: "auto", maxHeight: "calc(100vh - 100px)", background: "var(--bg)" }}>
 
         {/* ── AVAILABLE JOBS ── */}
         {view === "available" && (
           <div style={{ animation: "fadeUp .35s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <div>
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text)" }}>📋 {pick(lang, "Available Pickup Jobs", "ಲಭ್ಯ ಪಿಕಪ್ ಕಾರ್ಯಗಳು")}</h1>
-                <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 3 }}>{pick(lang, "Retailer-accepted crop orders waiting for a delivery partner to claim", "ಖರೀದಿದಾರರು ಸ್ವೀಕರಿಸಿದ ಬೆಳೆ ಆದೇಶಗಳನ್ನು ವಿತರಣಾ ಸಹಭಾಗಿಯು ಸ್ವೀಕರಿಸಲು ಕಾಯುತ್ತಿರುವ ಕಾರ್ಯಗಳು")}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 24 }}>
+              <div style={{ background: "linear-gradient(140deg,#293548 0%,#42546f 55%,#c88422 140%)", color: "#fff", borderRadius: 24, padding: "22px 24px", boxShadow: "var(--shadow)" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "5px 10px", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.6 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#f9d45b", animation: "pulse 1.4s infinite" }} />
+                  Dispatch Board
+                </div>
+                <h1 style={{ fontSize: 28, fontWeight: 800, marginTop: 18, lineHeight: 1.1 }}>🚛 {pick(lang, "Available Pickup Jobs", "ಲಭ್ಯ ಪಿಕಪ್ ಕಾರ್ಯಗಳು")}</h1>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,.8)", marginTop: 10, maxWidth: 560, lineHeight: 1.6 }}>
+                  {pick(lang, "Wholesaler-approved farm pickups ready to be claimed. The goal here is speed: pick a route, contact the farmer, verify pickup, and keep the lane moving.", "ಸಗಟು ಖರೀದಿದಾರರಿಂದ ಅನುಮೋದಿತ ಫಾರ್ಮ್ ಪಿಕಪ್ ಕಾರ್ಯಗಳು ಸ್ವೀಕರಿಸಲು ಸಿದ್ಧವಾಗಿವೆ. ಇಲ್ಲಿ ಗುರಿ ವೇಗ: ಮಾರ್ಗವನ್ನು ಆರಿಸಿ, ರೈತರನ್ನು ಸಂಪರ್ಕಿಸಿ, ಪಿಕಪ್ ದೃಢೀಕರಿಸಿ ಮತ್ತು ಸಾಗಣೆ ಮುಂದುವರಿಸಿ.")}
+                </p>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
+                  {[
+                    pick(lang, `${available.length} open routes`, `${available.length} ತೆರೆಯಿರುವ ಮಾರ್ಗಗಳು`),
+                    pick(lang, `${active.length} already live`, `${active.length} ಈಗಾಗಲೇ ಸಕ್ರಿಯ`),
+                    pick(lang, `${done.length} closed cleanly`, `${done.length} ಪೂರ್ಣಗೊಂಡಿವೆ`),
+                  ].map((item) => (
+                    <span key={item} style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 11px", fontSize: 11, fontWeight: 700 }}>
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--green-pale)", padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700, color: "var(--green)" }}>
-                <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.4s infinite" }} />
-                {pick(lang, `${available.length} available`, `${available.length} ಲಭ್ಯವಿದೆ`)}
-              </div>
-            </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
-              <StatCard icon="📋" label={pick(lang, "Available", "ಲಭ್ಯ")}   value={available.length} color="var(--green)" />
-              <StatCard icon="🚛" label={pick(lang, "In Progress", "ಪ್ರಗತಿಯಲ್ಲಿ")} value={active.length}    color="var(--blue)"  />
-              <StatCard icon="💸" label={pick(lang, "Payout Ready", "ಲಭ್ಯ ಪಾವತಿ")} value={available.length ? fmtP(available.reduce((sum, job) => sum + (job.deliveryPayout || 0), 0)) : "₹0"} color="var(--green)" />
-              <StatCard icon="✅" label={pick(lang, "Completed", "ಪೂರ್ಣಗೊಂಡಿವೆ")}   value={done.length}      color="var(--gold)"  />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+                <DispatchStat label={pick(lang, "Open Routes", "ತೆರೆದ ಮಾರ್ಗಗಳು")} value={available.length} sub={pick(lang, "Ready for immediate claim", "ತಕ್ಷಣ ಸ್ವೀಕರಿಸಲು ಸಿದ್ಧ")} tone="#41546f" bg="#f5f7fb" />
+                <DispatchStat label={pick(lang, "Payout Ready", "ಲಭ್ಯ ಪಾವತಿ")} value={payoutReady ? fmtP(payoutReady) : "₹0"} sub={pick(lang, `Avg ${avgPayout} per route`, `ಪ್ರತಿ ಮಾರ್ಗಕ್ಕೆ ಸರಾಸರಿ ${avgPayout}`)} tone="#7b5c23" bg="#fff8eb" border="#eadcc1" />
+                <DispatchStat label={pick(lang, "Live Now", "ಸಕ್ರಿಯ ಮಾರ್ಗಗಳು")} value={active.length} sub={pick(lang, avgRouteKm, avgRouteKm)} tone="#305c92" bg="#eef5ff" border="#d7e6ff" />
+                <DispatchStat label={pick(lang, "Completed", "ಪೂರ್ಣಗೊಂಡಿವೆ")} value={done.length} sub={pick(lang, "Closed and paid out", "ಪೂರ್ಣಗೊಂಡು ಪಾವತಿಸಲಾಗಿದೆ")} tone="var(--green)" bg="#f3f8ee" border="#dce5b5" />
+              </div>
             </div>
 
             {available.length === 0
-              ? <Empty icon="🛣️" title={pick(lang, "No jobs right now", "ಈಗ ಯಾವುದೇ ಕಾರ್ಯಗಳಿಲ್ಲ")} sub={pick(lang, "Check back soon — new jobs appear when retailers accept crop listings", "ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ — ಖರೀದಿದಾರರು ಬೆಳೆ ಲಿಸ್ಟಿಂಗ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸಿದಾಗ ಹೊಸ ಕಾರ್ಯಗಳು ಕಾಣಿಸುತ್ತವೆ")} />
+              ? <Empty icon="🛣️" title={pick(lang, "No jobs right now", "ಈಗ ಯಾವುದೇ ಕಾರ್ಯಗಳಿಲ್ಲ")} sub={pick(lang, "Check back soon — new jobs appear when wholesalers confirm selected bids", "ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ — ಸಗಟು ಖರೀದಿದಾರರು ಆಯ್ಕೆಯಾದ ಬಿಡ್‌ಗಳನ್ನು ದೃಢೀಕರಿಸಿದಾಗ ಹೊಸ ಕಾರ್ಯಗಳು ಕಾಣಿಸುತ್ತವೆ")} />
               : available.map(j => (
                 <JobCard key={j.id} job={j} lang={lang} role="delivery">
                   <Btn variant="primary" size="md" onClick={() => {
@@ -76,7 +103,19 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup,
         {/* ── ACTIVE ROUTES ── */}
         {view === "active" && (
           <div style={{ animation: "fadeUp .35s ease" }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 20 }}>🚛 {pick(lang, "My Active Routes", "ನನ್ನ ಸಕ್ರಿಯ ಮಾರ್ಗಗಳು")}</h1>
+            <div style={{ background: "linear-gradient(145deg,#fff8ec,#eef5ff)", border: "1px solid #ddd7c7", borderRadius: 22, padding: "18px 20px", marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#7b5c23", textTransform: "uppercase", letterSpacing: .6 }}>{pick(lang, "Route Control", "ಮಾರ್ಗ ನಿಯಂತ್ರಣ")}</div>
+                  <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", marginTop: 6 }}>🚛 {pick(lang, "My Active Routes", "ನನ್ನ ಸಕ್ರಿಯ ಮಾರ್ಗಗಳು")}</h1>
+                  <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>{pick(lang, "Keep pickup proof tight, then move each route cleanly from farm gate to wholesaler drop.", "ಪಿಕಪ್ ದೃಢೀಕರಣವನ್ನು ಸರಿಯಾಗಿ ಮಾಡಿ, ನಂತರ ಪ್ರತಿಯೊಂದು ಮಾರ್ಗವನ್ನೂ ಫಾರ್ಮ್‌ನಿಂದ ಸಗಟು ಖರೀದಿದಾರರ ಸ್ಥಳಕ್ಕೆ ಸುವ್ಯವಸ್ಥಿತವಾಗಿ ಕರೆದೊಯ್ಯಿರಿ.")}</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ background: "#fff", border: "1px solid #eadcc1", borderRadius: 999, padding: "7px 12px", fontSize: 11, fontWeight: 800, color: "#7b5c23" }}>{pick(lang, `${active.length} active`, `${active.length} ಸಕ್ರಿಯ`)}</span>
+                  <span style={{ background: "#fff", border: "1px solid #d7e6ff", borderRadius: 999, padding: "7px 12px", fontSize: 11, fontWeight: 800, color: "#305c92" }}>{pick(lang, `Avg route ${avgRouteKm}`, `ಸರಾಸರಿ ಮಾರ್ಗ ${avgRouteKm}`)}</span>
+                </div>
+              </div>
+            </div>
 
             {active.length === 0
               ? <Empty icon="🚛" title={pick(lang, "No active routes", "ಯಾವುದೇ ಸಕ್ರಿಯ ಮಾರ್ಗಗಳಿಲ್ಲ")} sub={pick(lang, "Claim an available job to get started", "ಪ್ರಾರಂಭಿಸಲು ಲಭ್ಯ ಕಾರ್ಯವನ್ನು ಸ್ವೀಕರಿಸಿ")} />
@@ -144,16 +183,26 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup,
         {/* ── COMPLETED ── */}
         {view === "done" && (
           <div style={{ animation: "fadeUp .35s ease" }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 20 }}>✅ {pick(lang, "Completed Deliveries", "ಪೂರ್ಣಗೊಂಡ ವಿತರಣೆಗಳು")}</h1>
+            <div style={{ background: "linear-gradient(145deg,#f3f8ee,#fffaf1)", border: "1px solid #dce5b5", borderRadius: 22, padding: "18px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "var(--green)", textTransform: "uppercase", letterSpacing: .6 }}>{pick(lang, "Closed Trips", "ಪೂರ್ಣಗೊಂಡ ಪ್ರಯಾಣಗಳು")}</div>
+                <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", marginTop: 6 }}>✅ {pick(lang, "Completed Deliveries", "ಪೂರ್ಣಗೊಂಡ ವಿತರಣೆಗಳು")}</h1>
+                <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>{pick(lang, "Finished routes stay here as your clean delivery record and payout history.", "ಪೂರ್ಣಗೊಂಡ ಮಾರ್ಗಗಳು ಇಲ್ಲಿ ನಿಮ್ಮ ವಿತರಣಾ ದಾಖಲೆ ಮತ್ತು ಪಾವತಿ ಇತಿಹಾಸವಾಗಿ ಉಳಿಯುತ್ತವೆ.")}</div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(140px, 1fr))", gap: 10 }}>
+                <DispatchStat label={pick(lang, "Completed", "ಪೂರ್ಣಗೊಂಡಿವೆ")} value={done.length} tone="var(--green)" bg="#fff" border="#dce5b5" />
+                <DispatchStat label={pick(lang, "Payout Earned", "ಪಾವತಿ ಗಳಿಕೆ")} value={payoutEarned ? fmtP(payoutEarned) : "₹0"} tone="#7b5c23" bg="#fff" border="#eadcc1" />
+              </div>
+            </div>
 
             {done.length === 0
               ? <Empty icon="✅" title={pick(lang, "No completed deliveries yet", "ಇನ್ನೂ ಪೂರ್ಣಗೊಂಡ ವಿತರಣೆಗಳಿಲ್ಲ")} sub={pick(lang, "Complete a route to see it here", "ಇಲ್ಲಿ ನೋಡಲು ಒಂದು ಮಾರ್ಗವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ")} />
               : (
                 <>
-                  <div style={{ background: "var(--green-pale)", border: "1px solid var(--green-mid)", borderRadius: 14, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ background: "linear-gradient(145deg,#fffaf1,#f3f8ee)", border: "1px solid #eadcc1", borderRadius: 16, padding: "16px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
                     <span style={{ fontSize: 28 }}>🏆</span>
                     <div>
-                      <div style={{ fontWeight: 700, color: "var(--green)", fontSize: 15 }}>
+                      <div style={{ fontWeight: 700, color: "#7b5c23", fontSize: 15 }}>
                         {pick(lang, `Great work! ${done.length} delivery${done.length > 1 ? "s" : ""} completed`, `ಶಾಭಾಷ್! ${done.length} ವಿತರಣೆ ಪೂರ್ಣಗೊಂಡಿದೆ`)}
                       </div>
                       <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>

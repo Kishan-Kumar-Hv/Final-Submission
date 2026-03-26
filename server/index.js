@@ -14,12 +14,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const dbPath = path.resolve(rootDir, process.env.DB_PATH || "./data/raitha-reach.sqlite");
 const port = Number(process.env.PORT || 8787);
-const validStores = new Set(["users", "crops", "jobs"]);
+const validStores = new Set(["users", "crops", "jobs", "requirements", "exports"]);
 const aiConfig = {
-  apiKey: process.env.OPENAI_API_KEY || "",
-  visionModel: process.env.OPENAI_VISION_MODEL || "gpt-4.1-mini",
-  fallbackModel: process.env.OPENAI_VISION_FALLBACK_MODEL || "gpt-4o-mini",
-  minConfidence: Math.max(0, Math.min(1, Number(process.env.OPENAI_VISION_MIN_CONFIDENCE || 0.45))),
+  provider: String(
+    process.env.AI_PROVIDER
+    || (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY ? "gemini" : "openai")
+  ).toLowerCase(),
+  minConfidence: Math.max(0, Math.min(1, Number(process.env.AI_VISION_MIN_CONFIDENCE || process.env.OPENAI_VISION_MIN_CONFIDENCE || process.env.GEMINI_VISION_MIN_CONFIDENCE || 0.45))),
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || "",
+    visionModel: process.env.OPENAI_VISION_MODEL || "gpt-4.1-mini",
+    fallbackModel: process.env.OPENAI_VISION_FALLBACK_MODEL || "gpt-4o-mini",
+  },
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
+    visionModel: process.env.GEMINI_VISION_MODEL || "gemini-2.5-flash",
+    fallbackModel: process.env.GEMINI_VISION_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+  },
 };
 const smsConfig = {
   enabled: process.env.SMS_ENABLED === "true",
@@ -203,6 +214,29 @@ function extractResponseText(responseBody) {
     .trim();
 }
 
+function extractGeminiText(responseBody) {
+  return (responseBody?.candidates || [])
+    .flatMap(candidate => candidate?.content?.parts || [])
+    .map(part => part?.text || "")
+    .join("\n")
+    .trim();
+}
+
+function parseImageDataUrl(imageDataUrl) {
+  const match = String(imageDataUrl || "").match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+
+  if (!match) {
+    const error = new Error("Please upload a valid image file.");
+    error.status = 400;
+    throw error;
+  }
+
+  return {
+    mimeType: match[1],
+    data: match[2],
+  };
+}
+
 function buildCropCatalogPrompt() {
   return CROPS_DATA
     .map(crop => {
@@ -236,7 +270,7 @@ function normalizeCropScanResult(parsed, { model, strategy }) {
       ? parsed.visibleFeatures.map(item => String(item || "").trim()).filter(Boolean).slice(0, 4)
       : [],
     model,
-    provider: "openai",
+    provider: aiConfig.provider,
     strategy,
   };
 }
@@ -257,11 +291,11 @@ function selectBestCropScanResult(results = []) {
     })[0] || null;
 }
 
-async function scanCropPhotoWithResponses(imageDataUrl, model) {
+async function scanCropPhotoWithOpenAIResponses(imageDataUrl, model) {
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${aiConfig.apiKey}`,
+      Authorization: `Bearer ${aiConfig.openai.apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -310,11 +344,11 @@ async function scanCropPhotoWithResponses(imageDataUrl, model) {
   });
 }
 
-async function scanCropPhotoWithChatFallback(imageDataUrl, model) {
+async function scanCropPhotoWithOpenAIChatFallback(imageDataUrl, model) {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${aiConfig.apiKey}`,
+      Authorization: `Bearer ${aiConfig.openai.apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -366,8 +400,8 @@ async function scanCropPhotoWithChatFallback(imageDataUrl, model) {
   });
 }
 
-async function analyzeCropPhoto(imageDataUrl) {
-  if (!aiConfig.apiKey) {
+async function analyzeCropPhotoWithOpenAI(imageDataUrl) {
+  if (!aiConfig.openai.apiKey) {
     const error = new Error("Crop photo scan needs OPENAI_API_KEY in your .env file.");
     error.status = 503;
     throw error;
@@ -378,10 +412,10 @@ async function analyzeCropPhoto(imageDataUrl) {
   let primaryResult = null;
 
   try {
-    primaryResult = await scanCropPhotoWithResponses(imageDataUrl, aiConfig.visionModel);
+    primaryResult = await scanCropPhotoWithOpenAIResponses(imageDataUrl, aiConfig.openai.visionModel);
     attempts.push(primaryResult.strategy);
 
-    if (!shouldRetryCropScan(primaryResult) || !aiConfig.fallbackModel) {
+    if (!shouldRetryCropScan(primaryResult) || !aiConfig.openai.fallbackModel) {
       return {
         ...primaryResult,
         scanPath: "primary",
@@ -392,12 +426,12 @@ async function analyzeCropPhoto(imageDataUrl) {
     primaryError = error;
   }
 
-  if (!aiConfig.fallbackModel) {
+  if (!aiConfig.openai.fallbackModel) {
     throw primaryError || new Error("Crop photo scan could not complete.");
   }
 
   try {
-    const fallbackResult = await scanCropPhotoWithChatFallback(imageDataUrl, aiConfig.fallbackModel);
+    const fallbackResult = await scanCropPhotoWithOpenAIChatFallback(imageDataUrl, aiConfig.openai.fallbackModel);
     attempts.push(fallbackResult.strategy);
     const bestResult = selectBestCropScanResult([fallbackResult, primaryResult]) || fallbackResult;
 
@@ -424,6 +458,126 @@ async function analyzeCropPhoto(imageDataUrl) {
     error.status = primaryError?.status || fallbackError?.status || 502;
     throw error;
   }
+}
+
+async function scanCropPhotoWithGemini(imageDataUrl, model, strategy) {
+  const { mimeType, data } = parseImageDataUrl(imageDataUrl);
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": aiConfig.gemini.apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: buildCropScanInstruction() },
+            {
+              inline_data: {
+                mime_type: mimeType,
+                data,
+              },
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        maxOutputTokens: 400,
+        responseMimeType: "application/json",
+        responseJsonSchema: CROP_SCAN_RESPONSE_SCHEMA,
+      },
+    }),
+  });
+
+  const responseBody = await readResponseBody(response);
+
+  if (!response.ok) {
+    throw new Error(`Gemini crop scan failed: ${response.status} ${JSON.stringify(responseBody)}`);
+  }
+
+  const rawText = extractGeminiText(responseBody);
+  if (!rawText) {
+    throw new Error("Gemini crop scan returned an empty result.");
+  }
+
+  const result = normalizeCropScanResult(JSON.parse(rawText), {
+    model,
+    strategy,
+  });
+
+  return {
+    ...result,
+    provider: "gemini",
+  };
+}
+
+async function analyzeCropPhotoWithGemini(imageDataUrl) {
+  if (!aiConfig.gemini.apiKey) {
+    const error = new Error("Crop photo scan needs GEMINI_API_KEY in your .env file.");
+    error.status = 503;
+    throw error;
+  }
+
+  const attempts = [];
+  let primaryError = null;
+  let primaryResult = null;
+
+  try {
+    primaryResult = await scanCropPhotoWithGemini(imageDataUrl, aiConfig.gemini.visionModel, "gemini_primary");
+    attempts.push(primaryResult.strategy);
+
+    if (!shouldRetryCropScan(primaryResult) || !aiConfig.gemini.fallbackModel) {
+      return {
+        ...primaryResult,
+        scanPath: "primary",
+        attempts,
+      };
+    }
+  } catch (error) {
+    primaryError = error;
+  }
+
+  if (!aiConfig.gemini.fallbackModel) {
+    throw primaryError || new Error("Crop photo scan could not complete.");
+  }
+
+  try {
+    const fallbackResult = await scanCropPhotoWithGemini(imageDataUrl, aiConfig.gemini.fallbackModel, "gemini_fallback");
+    attempts.push(fallbackResult.strategy);
+    const bestResult = selectBestCropScanResult([fallbackResult, primaryResult]) || fallbackResult;
+
+    return {
+      ...bestResult,
+      scanPath: bestResult.strategy === fallbackResult.strategy ? "fallback" : "primary",
+      attempts,
+    };
+  } catch (fallbackError) {
+    if (primaryResult?.cropName) {
+      return {
+        ...primaryResult,
+        scanPath: "primary",
+        attempts,
+      };
+    }
+
+    const error = new Error(
+      [
+        primaryError?.message,
+        fallbackError?.message,
+      ].filter(Boolean).join(" | ") || "Crop photo scan failed."
+    );
+    error.status = primaryError?.status || fallbackError?.status || 502;
+    throw error;
+  }
+}
+
+async function analyzeCropPhoto(imageDataUrl) {
+  if (aiConfig.provider === "gemini") {
+    return analyzeCropPhotoWithGemini(imageDataUrl);
+  }
+
+  return analyzeCropPhotoWithOpenAI(imageDataUrl);
 }
 
 async function twilioFormRequest(url, body) {
@@ -677,9 +831,10 @@ app.get("/api/health", (_req, res) => {
     smsProvider: smsConfig.provider,
     msg91OtpReady: Boolean(smsConfig.msg91.authKey && smsConfig.msg91.otpTemplateId),
     twilioOtpReady: Boolean(smsConfig.twilio.accountSid && smsConfig.twilio.authToken && smsConfig.twilio.verifyServiceSid),
-    cropScanReady: Boolean(aiConfig.apiKey),
-    cropScanModel: aiConfig.visionModel,
-    cropScanFallbackModel: aiConfig.fallbackModel,
+    aiProvider: aiConfig.provider,
+    cropScanReady: aiConfig.provider === "gemini" ? Boolean(aiConfig.gemini.apiKey) : Boolean(aiConfig.openai.apiKey),
+    cropScanModel: aiConfig.provider === "gemini" ? aiConfig.gemini.visionModel : aiConfig.openai.visionModel,
+    cropScanFallbackModel: aiConfig.provider === "gemini" ? aiConfig.gemini.fallbackModel : aiConfig.openai.fallbackModel,
     cropScanMinConfidence: aiConfig.minConfidence,
   });
 });

@@ -35,9 +35,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
     },
     retailer: {
       icon: "🏪",
-      label: pick(lang, "Retailer / Buyer", "ಖರೀದಿದಾರ"),
-      short: pick(lang, "Buyer", "ಖರೀದಿದಾರ"),
-      desc: pick(lang, "Browse crops and accept orders fast", "ಬೆಳೆಗಳನ್ನು ನೋಡಿ ಮತ್ತು ಆದೇಶಗಳನ್ನು ಬೇಗ ಸ್ವೀಕರಿಸಿ"),
+      label: pick(lang, "Wholesaler / Buyer", "ಸಗಟು ಖರೀದಿದಾರ"),
+      short: pick(lang, "Wholesaler", "ಸಗಟು"),
+      desc: pick(lang, "Browse crops and place wholesale bids fast", "ಬೆಳೆಗಳನ್ನು ನೋಡಿ ಮತ್ತು ಸಗಟು ಬಿಡ್‌ಗಳನ್ನು ಬೇಗ ಮಾಡಿ"),
       color: "var(--gold)",
       bg: "var(--gold-pale)",
     },
@@ -50,6 +50,8 @@ export default function AuthPage({ onLogin, toast, lang }) {
       bg: "var(--blue-pale)",
     },
   };
+  const loginRoleEntries = Object.entries(roles);
+  const registerRoleEntries = loginRoleEntries;
 
   function normalizePhone(value) {
     return value.replace(/\D/g, "").slice(-10);
@@ -211,7 +213,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
 
     try {
       const allUsers = await dbGetAll("users");
-      const found = allUsers.find((user) => normalizePhone(user.phone || "") === phone);
+      const found = allUsers.find((user) => user.role === form.role && normalizePhone(user.phone || "") === phone);
 
       if (!found) {
         setErr(pick(lang, "No account found with that phone number. Please register first.", "ಈ ಫೋನ್ ಸಂಖ್ಯೆಗೆ ಖಾತೆ ಸಿಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮೊದಲು ನೋಂದಣಿ ಮಾಡಿ."));
@@ -228,7 +230,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
   async function handleRegister() {
     const phone = normalizePhone(form.phone);
     if (!form.name.trim()) {
-      setErr(pick(lang, "Please enter your full name.", "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ."));
+      setErr(form.role === "retailer"
+        ? pick(lang, "Please enter your shop name.", "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಅಂಗಡಿ ಹೆಸರನ್ನು ನಮೂದಿಸಿ.")
+        : pick(lang, "Please enter your full name.", "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ."));
       setLoading(false);
       return;
     }
@@ -252,6 +256,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
       const newUser = {
         id: uid(),
         name: form.name.trim(),
+        shopName: form.role === "retailer" ? form.name.trim() : "",
         email: "",
         password: "",
         role: form.role,
@@ -302,7 +307,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
     (async () => {
       try {
         if (!localStorage.getItem(RESET_MARKER)) {
-          await Promise.all([dbClear("crops"), dbClear("jobs")]);
+          await Promise.all([dbClear("crops"), dbClear("jobs"), dbClear("requirements")]);
           localStorage.setItem(RESET_MARKER, "done");
         }
         await Promise.all(DEMO_USERS.map((user) => dbPut("users", user)));
@@ -357,22 +362,23 @@ export default function AuthPage({ onLogin, toast, lang }) {
               {pick(lang, "Farm-Direct Presentation Flow", "ಕೃಷಿ ನೇರ ಪ್ರಸ್ತುತಿ ಹರಿವು")}
             </div>
             <h1 style={{ fontSize: "clamp(2rem,4vw,3.1rem)", lineHeight: 1.05, fontWeight: 900, marginBottom: 14 }}>
-              {pick(lang, "Login for a Clean, Real Farmer Story", "ಶುದ್ಧ ಮತ್ತು ನೈಜ ರೈತರ ಕಥೆಗೆ ಲಾಗಿನ್ ಮಾಡಿ")}
+              {pick(lang, "Login for Farmer, Wholesaler, and Delivery Flow", "ರೈತ, ಸಗಟು ಮತ್ತು ವಿತರಣಾ ಹರಿವಿಗೆ ಲಾಗಿನ್ ಮಾಡಿ")}
             </h1>
             <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(255,255,255,.85)", maxWidth: 520, marginBottom: 28 }}>
               {pick(
                 lang,
-                "This auth flow is trimmed for presentation: simple phone login, real SMS OTP when MSG91 is enabled, demo auto-fill fallback, and a fresh clean start with old crop and order data cleared.",
-                "ಈ ಆಥ್ ಹರಿವು ಪ್ರಸ್ತುತಿಗಾಗಿ ಸರಳಗೊಳಿಸಲಾಗಿದೆ: ಸರಳ ಫೋನ್ ಲಾಗಿನ್, ನೈಜ SMS OTP ಅಥವಾ ಡೆಮೊ ಸ್ವಯಂ ತುಂಬಿಕೆ, ತಕ್ಷಣದ ಡೆಮೊ ಪ್ರವೇಶ, ಮತ್ತು ಹಳೆಯ ಬೆಳೆ/ಆದೇಶ ಡೇಟಾ ತೆರವುಗೊಂಡ ಶುದ್ಧ ಆರಂಭ."
+                "This auth flow is trimmed for presentation: farmers, wholesalers, and delivery partners all sign in with a simple phone-first OTP flow.",
+                "ಈ ಆಥ್ ಹರಿವು ಪ್ರಸ್ತುತಿಗಾಗಿ ಸರಳಗೊಳಿಸಲಾಗಿದೆ: ರೈತರು, ಸಗಟು ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಎಲ್ಲರೂ ಸರಳ ಫೋನ್-ಮೊದಲ OTP ಹರಿವಿನಿಂದ ಲಾಗಿನ್ ಮಾಡುತ್ತಾರೆ."
               )}
             </p>
 
             <div style={{ display: "grid", gap: 12, marginBottom: 24 }}>
               {[
                 pick(lang, "Farmer logs in with just phone number + OTP", "ರೈತರು ಕೇವಲ ಫೋನ್ ಸಂಖ್ಯೆ + OTP ಮೂಲಕ ಲಾಗಿನ್ ಮಾಡುತ್ತಾರೆ"),
-                pick(lang, "New users register with only name and number", "ಹೊಸ ಬಳಕೆದಾರರು ಕೇವಲ ಹೆಸರು ಮತ್ತು ಸಂಖ್ಯೆಯಿಂದ ನೋಂದಣಿ ಮಾಡುತ್ತಾರೆ"),
-                pick(lang, "MSG91-ready OTP works live, with demo auto-fill as fallback", "MSG91 ಸಿದ್ಧ OTP ನೈಜವಾಗಿ ಕೆಲಸಮಾಡುತ್ತದೆ, ಡೆಮೋ ಸ್ವಯಂ ತುಂಬಿಕೆ ಬ್ಯಾಕಪ್ ಆಗಿದೆ"),
-                pick(lang, "Old crop and order data is reset so you start fresh", "ನೀವು ಶುದ್ಧವಾಗಿ ಪ್ರಾರಂಭಿಸಲು ಹಳೆಯ ಬೆಳೆ ಮತ್ತು ಆದೇಶ ಡೇಟಾ ಮರುಹೊಂದಿಸಲಾಗಿದೆ"),
+                pick(lang, "Wholesalers keep the existing local crop bidding flow", "ಸಗಟು ಖರೀದಿದಾರರು ಈಗಿನ ಸ್ಥಳೀಯ ಬೆಳೆ ಬಿಡ್ ಹರಿವನ್ನೇ ಮುಂದುವರಿಸುತ್ತಾರೆ"),
+                pick(lang, "Delivery partners claim pickups after orders are confirmed", "ಆದೇಶ ದೃಢೀಕರಿಸಿದ ನಂತರ ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಪಿಕಪ್ ಕ್ಲೇಮ್ ಮಾಡುತ್ತಾರೆ"),
+                pick(lang, "Farmer, wholesaler, and delivery demo accounts are ready below", "ರೈತ, ಸಗಟು ಮತ್ತು ವಿತರಣಾ ಡೆಮೊ ಖಾತೆಗಳು ಕೆಳಗೆ ಸಿದ್ಧವಾಗಿವೆ"),
+                pick(lang, "Old crop and order data is reset so you start fresh", "ನೀವು ಶುದ್ಧವಾಗಿ ಪ್ರಾರಂಭಿಸಲು ಹಳೆಯ ಬೆಳೆ ಮತ್ತು ಆದೇಶ ಡೇಟಾವನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ"),
               ].map((line) => (
                 <div key={line} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "rgba(255,255,255,.9)" }}>
                   <span style={{ fontSize: 16 }}>✅</span>
@@ -388,8 +394,9 @@ export default function AuthPage({ onLogin, toast, lang }) {
               <div style={{ display: "grid", gap: 8 }}>
                 {[
                   `1. ${pick(lang, "Farmer logs in and posts a crop", "ರೈತ ಲಾಗಿನ್ ಮಾಡಿ ಬೆಳೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ")}`,
-                  `2. ${pick(lang, "Retailer accepts the crop directly", "ಖರೀದಿದಾರರು ಬೆಳೆಯನ್ನು ನೇರವಾಗಿ ಸ್ವೀಕರಿಸುತ್ತಾರೆ")}`,
-                  `3. ${pick(lang, "Delivery claims route and verifies pickup OTP", "ವಿತರಣಾ ಸಹಭಾಗಿ ಮಾರ್ಗ ಸ್ವೀಕರಿಸಿ ಪಿಕಪ್ OTP ದೃಢೀಕರಿಸುತ್ತಾರೆ")}`,
+                  `2. ${pick(lang, "Wholesaler logs in and places a live bid or posts a crop need", "ಸಗಟು ಖರೀದಿದಾರರು ಲಾಗಿನ್ ಮಾಡಿ ಲೈವ್ ಬಿಡ್ ಮಾಡುತ್ತಾರೆ ಅಥವಾ ಬೆಳೆ ಬೇಡಿಕೆ ಪೋಸ್ಟ್ ಮಾಡುತ್ತಾರೆ")}`,
+                  `3. ${pick(lang, "Farmer accepts the best match and confirms the order", "ರೈತರು ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಯನ್ನು ಸ್ವೀಕರಿಸಿ ಆದೇಶವನ್ನು ದೃಢೀಕರಿಸುತ್ತಾರೆ")}`,
+                  `4. ${pick(lang, "Delivery partner claims the route and completes pickup with OTP", "ವಿತರಣಾ ಸಹಭಾಗಿ ಮಾರ್ಗವನ್ನು ಕ್ಲೇಮ್ ಮಾಡಿ OTP ಮೂಲಕ ಪಿಕಪ್ ಪೂರ್ಣಗೊಳಿಸುತ್ತಾರೆ")}`,
                 ].map((step) => (
                   <div key={step} style={{ fontSize: 13, color: "rgba(255,255,255,.86)" }}>{step}</div>
                 ))}
@@ -403,7 +410,7 @@ export default function AuthPage({ onLogin, toast, lang }) {
             <div style={{ textAlign: "center", marginBottom: 22 }}>
               <div style={{ width: 66, height: 66, borderRadius: 20, background: "linear-gradient(135deg, #9a5523 0%, #c88422 48%, #667a2f 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 14px", boxShadow: "0 10px 28px rgba(154,85,35,.22)" }}>🌾</div>
               <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--text)", marginBottom: 6 }}>Raitha Reach</h1>
-              <p style={{ fontSize: 14, color: "var(--text3)" }}>{pick(lang, "Phone-first login for farmers, buyers and delivery", "ರೈತರು, ಖರೀದಿದಾರರು ಮತ್ತು ವಿತರಣೆಗೆ ಫೋನ್-ಮೊದಲ ಲಾಗಿನ್")}</p>
+              <p style={{ fontSize: 14, color: "var(--text3)" }}>{pick(lang, "Farm-direct marketplace for three working roles", "ಮೂರು ಕಾರ್ಯನಿರ್ವಹಿಸುವ ಪಾತ್ರಗಳ ಫಾರ್ಮ್-ಡೈರೆಕ್ಟ್ ಮಾರುಕಟ್ಟೆ")}</p>
             </div>
 
             <div style={{ display: "flex", background: "var(--bg)", borderRadius: 14, padding: 4, marginBottom: 18, border: "1px solid var(--border)" }}>
@@ -486,18 +493,42 @@ export default function AuthPage({ onLogin, toast, lang }) {
             )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {tab === "login" && !otpMeta && (
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 8 }}>
+                      {pick(lang, "Login As *", "ಇದಾಗಿ ಲಾಗಿನ್ ಮಾಡಿ *")}
+                  </label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
+                    {loginRoleEntries.map(([key, role]) => (
+                      <div
+                        key={key}
+                        onClick={() => setForm((current) => ({ ...current, role: key }))}
+                        style={{ padding: "12px 8px", borderRadius: 14, border: `2px solid ${form.role === key ? role.color : "var(--border)"}`, background: form.role === key ? role.bg : "#fff", cursor: "pointer", textAlign: "center", transition: "all .15s" }}
+                      >
+                        <div style={{ fontSize: 22, marginBottom: 4 }}>{role.icon}</div>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: form.role === key ? role.color : "var(--text3)" }}>{role.short}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {tab === "register" && (
                 <>
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 6 }}>
-                      {pick(lang, "Full Name *", "ಪೂರ್ಣ ಹೆಸರು *")}
+                      {form.role === "retailer"
+                        ? pick(lang, "Shop Name *", "ಅಂಗಡಿ ಹೆಸರು *")
+                        : pick(lang, "Full Name *", "ಪೂರ್ಣ ಹೆಸರು *")}
                     </label>
                     <input
                       style={inp}
                       name="name"
                       value={form.name}
                       onChange={h}
-                      placeholder={pick(lang, "e.g. Ramu Gowda", "ಉದಾ. ರಾಮು ಗೌಡ")}
+                      placeholder={form.role === "retailer"
+                        ? pick(lang, "e.g. FreshKart Traders", "ಉದಾ. ಫ್ರೆಶ್‌ಕಾರ್ಟ್ ಟ್ರೇಡರ್ಸ್")
+                        : pick(lang, "e.g. Ramu Gowda", "ಉದಾ. ರಾಮು ಗೌಡ")}
                       onFocus={(event) => { event.target.style.borderColor = "var(--green)"; }}
                       onBlur={(event) => { event.target.style.borderColor = "var(--border)"; }}
                     />
@@ -507,8 +538,8 @@ export default function AuthPage({ onLogin, toast, lang }) {
                     <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 8 }}>
                       {pick(lang, "Select Role *", "ಪಾತ್ರ ಆಯ್ಕೆ ಮಾಡಿ *")}
                     </label>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                      {Object.entries(roles).map(([key, role]) => (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
+                      {registerRoleEntries.map(([key, role]) => (
                         <div
                           key={key}
                           onClick={() => setForm((current) => ({ ...current, role: key }))}

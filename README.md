@@ -65,6 +65,11 @@ The project supports these Vite env values:
 
 Server env values:
 
+- `AI_PROVIDER`: Crop scan provider to use (`gemini` or `openai`)
+- `GEMINI_API_KEY`: Gemini API key from Google AI Studio for crop-photo scan
+- `GEMINI_VISION_MODEL`: Primary Gemini vision model (`gemini-2.5-flash` by default)
+- `GEMINI_VISION_FALLBACK_MODEL`: Secondary Gemini vision model (`gemini-2.5-flash-lite` by default)
+- `AI_VISION_MIN_CONFIDENCE`: Minimum confidence before the app retries with the fallback model (`0.45` by default)
 - `OPENAI_API_KEY`: Enables AI crop-photo scan in the crop post form
 - `OPENAI_VISION_MODEL`: Primary vision model used for crop-photo scan (`gpt-4.1-mini` by default)
 - `OPENAI_VISION_FALLBACK_MODEL`: Secondary vision model used when the primary scan fails or is too weak (`gpt-4o-mini` by default)
@@ -114,5 +119,6 @@ src/
 - When `SMS_ENABLED=false`, OTP and alerts stay in mock/demo mode
 - For live India SMS with MSG91, keep your sender ID and DLT-approved template ready
 - For live Twilio OTP, add a Verify service SID (`VA...`) before switching `SMS_PROVIDER` to `twilio`
-- Crop photo scan needs the local API server running plus `OPENAI_API_KEY` in `.env`
+- Crop photo scan needs the local API server running plus either `GEMINI_API_KEY` or `OPENAI_API_KEY` in `.env`
 - Crop photo scan now tries the primary OpenAI model first and automatically falls back to the secondary model when needed
+- Gemini crop scan is also supported with `AI_PROVIDER=gemini` plus `GEMINI_API_KEY` in `.env`

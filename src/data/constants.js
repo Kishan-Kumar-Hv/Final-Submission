@@ -175,6 +175,7 @@ export const DEMO_USERS = [
   {
     id: "demo_retailer",
     name: "FreshKart Traders",
+    shopName: "FreshKart Traders",
     email: "retailer.demo@raithareach.app",
     password: "demo123",
     role: "retailer",
@@ -219,7 +220,7 @@ export const HELPLINES = [
 
 export const S_ORDER = ["awaiting-retailer","confirmed","on-the-way","picked-up","delivered"];
 export const S_LABEL = {
-  "awaiting-retailer":"Awaiting Retailer",
+  "awaiting-retailer":"Awaiting Wholesaler",
   confirmed:"Confirmed",
   scheduled:"Confirmed",
   "on-the-way":"On the Way",
