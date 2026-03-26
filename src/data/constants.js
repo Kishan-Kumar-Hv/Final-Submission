@@ -20,29 +20,145 @@ export const KA_LOCS = [
 ];
 
 export const CROPS_DATA = [
-  {c:"Tomato",      bp:18, e:"🍅", cat:"Vegetables"},
-  {c:"Onion",       bp:24, e:"🧅", cat:"Vegetables"},
-  {c:"Potato",      bp:22, e:"🥔", cat:"Vegetables"},
-  {c:"Cabbage",     bp:14, e:"🥬", cat:"Vegetables"},
-  {c:"Cauliflower", bp:32, e:"🥦", cat:"Vegetables"},
-  {c:"Brinjal",     bp:20, e:"🍆", cat:"Vegetables"},
-  {c:"Carrot",      bp:28, e:"🥕", cat:"Vegetables"},
-  {c:"Ladyfinger",  bp:35, e:"🌿", cat:"Vegetables"},
-  {c:"Capsicum",    bp:45, e:"🫑", cat:"Vegetables"},
-  {c:"Cucumber",    bp:16, e:"🥒", cat:"Vegetables"},
-  {c:"Beans",       bp:38, e:"🫘", cat:"Vegetables"},
-  {c:"Beetroot",    bp:26, e:"🟣", cat:"Vegetables"},
-  {c:"Pumpkin",     bp:12, e:"🎃", cat:"Vegetables"},
-  {c:"Drumstick",   bp:40, e:"🌾", cat:"Vegetables"},
-  {c:"Maize",       bp:19, e:"🌽", cat:"Grains"},
-  {c:"Groundnut",   bp:55, e:"🥜", cat:"Oilseeds"},
-  {c:"Turmeric",    bp:90, e:"🌕", cat:"Spices"},
-  {c:"Ginger",      bp:70, e:"🫚", cat:"Spices"},
-  {c:"Sugarcane",   bp:3,  e:"🎋", cat:"Cash Crops"},
-  {c:"Coconut",     bp:25, e:"🥥", cat:"Cash Crops"},
-  {c:"Banana",      bp:18, e:"🍌", cat:"Fruits"},
-  {c:"Mango",       bp:60, e:"🥭", cat:"Fruits"},
+  {c:"Tomato",        bp:18, e:"🍅", cat:"Vegetables", aliases:["Tamatar"]},
+  {c:"Onion",         bp:24, e:"🧅", cat:"Vegetables"},
+  {c:"Potato",        bp:22, e:"🥔", cat:"Vegetables"},
+  {c:"Cabbage",       bp:14, e:"🥬", cat:"Vegetables"},
+  {c:"Cauliflower",   bp:32, e:"🥦", cat:"Vegetables"},
+  {c:"Brinjal",       bp:20, e:"🍆", cat:"Vegetables", aliases:["Eggplant"]},
+  {c:"Carrot",        bp:28, e:"🥕", cat:"Vegetables"},
+  {c:"Ladyfinger",    bp:35, e:"🌿", cat:"Vegetables", aliases:["Okra"]},
+  {c:"Capsicum",      bp:45, e:"🫑", cat:"Vegetables", aliases:["Bell Pepper"]},
+  {c:"Cucumber",      bp:16, e:"🥒", cat:"Vegetables"},
+  {c:"Beans",         bp:38, e:"🫘", cat:"Vegetables", aliases:["French Beans"]},
+  {c:"Beetroot",      bp:26, e:"🟣", cat:"Vegetables"},
+  {c:"Pumpkin",       bp:12, e:"🎃", cat:"Vegetables"},
+  {c:"Drumstick",     bp:40, e:"🌿", cat:"Vegetables", aliases:["Moringa"]},
+  {c:"Spinach",       bp:18, e:"🥬", cat:"Vegetables", aliases:["Palak"]},
+  {c:"Green Chilli",  bp:42, e:"🌶️", cat:"Vegetables", aliases:["Chilli", "Chili"]},
+  {c:"Peas",          bp:34, e:"🫛", cat:"Vegetables", aliases:["Green Peas"]},
+  {c:"Garlic",        bp:58, e:"🧄", cat:"Vegetables"},
+  {c:"Radish",        bp:18, e:"🥕", cat:"Vegetables", aliases:["Mooli"]},
+  {c:"Bottle Gourd",  bp:16, e:"🥒", cat:"Vegetables", aliases:["Lauki"]},
+  {c:"Ridge Gourd",   bp:22, e:"🥒", cat:"Vegetables", aliases:["Turai"]},
+  {c:"Bitter Gourd",  bp:28, e:"🥒", cat:"Vegetables", aliases:["Karela"]},
+  {c:"Banana",        bp:18, e:"🍌", cat:"Fruits"},
+  {c:"Mango",         bp:60, e:"🥭", cat:"Fruits"},
+  {c:"Papaya",        bp:24, e:"🥭", cat:"Fruits"},
+  {c:"Watermelon",    bp:14, e:"🍉", cat:"Fruits"},
+  {c:"Muskmelon",     bp:28, e:"🍈", cat:"Fruits", aliases:["Melon"]},
+  {c:"Orange",        bp:42, e:"🍊", cat:"Fruits"},
+  {c:"Grapes",        bp:55, e:"🍇", cat:"Fruits"},
+  {c:"Guava",         bp:32, e:"🍏", cat:"Fruits"},
+  {c:"Pomegranate",   bp:68, e:"🍎", cat:"Fruits"},
+  {c:"Pineapple",     bp:36, e:"🍍", cat:"Fruits"},
+  {c:"Maize",         bp:19, e:"🌽", cat:"Grains", aliases:["Corn"]},
+  {c:"Rice",          bp:34, e:"🍚", cat:"Grains", aliases:["Paddy"]},
+  {c:"Wheat",         bp:29, e:"🌾", cat:"Grains"},
+  {c:"Ragi",          bp:31, e:"🌾", cat:"Grains", aliases:["Finger Millet"]},
+  {c:"Jowar",         bp:27, e:"🌾", cat:"Grains", aliases:["Sorghum"]},
+  {c:"Bajra",         bp:26, e:"🌾", cat:"Grains", aliases:["Pearl Millet"]},
+  {c:"Green Gram",    bp:78, e:"🫘", cat:"Pulses", aliases:["Moong", "Moong Dal"]},
+  {c:"Black Gram",    bp:86, e:"🫘", cat:"Pulses", aliases:["Urad", "Urad Dal"]},
+  {c:"Bengal Gram",   bp:72, e:"🫘", cat:"Pulses", aliases:["Chana", "Chickpea"]},
+  {c:"Red Gram",      bp:95, e:"🫘", cat:"Pulses", aliases:["Toor", "Tur Dal", "Pigeon Pea"]},
+  {c:"Horse Gram",    bp:64, e:"🫘", cat:"Pulses", aliases:["Huruli"]},
+  {c:"Cowpea",        bp:58, e:"🫘", cat:"Pulses", aliases:["Alasande"]},
+  {c:"Groundnut",     bp:55, e:"🥜", cat:"Oilseeds", aliases:["Peanut"]},
+  {c:"Sesame",        bp:92, e:"🌾", cat:"Oilseeds", aliases:["Til"]},
+  {c:"Sunflower",     bp:48, e:"🌻", cat:"Oilseeds"},
+  {c:"Mustard",       bp:52, e:"🌾", cat:"Oilseeds"},
+  {c:"Soybean",       bp:46, e:"🫘", cat:"Oilseeds"},
+  {c:"Turmeric",      bp:90, e:"🌕", cat:"Spices"},
+  {c:"Ginger",        bp:70, e:"🫚", cat:"Spices"},
+  {c:"Coriander",     bp:62, e:"🌿", cat:"Spices"},
+  {c:"Dry Chilli",    bp:110, e:"🌶️", cat:"Spices", aliases:["Red Chilli"]},
+  {c:"Sugarcane",     bp:3,  e:"🎋", cat:"Cash Crops"},
+  {c:"Coconut",       bp:25, e:"🥥", cat:"Cash Crops"},
+  {c:"Cotton",        bp:68, e:"☁️", cat:"Cash Crops"},
+  {c:"Coffee",        bp:145, e:"☕", cat:"Cash Crops"},
 ];
+
+function normalizeCropName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+const REGROWTH_CROP_KEYS = new Set([
+  "tomato",
+  "brinjal",
+  "ladyfinger",
+  "capsicum",
+  "cucumber",
+  "beans",
+  "drumstick",
+  "spinach",
+  "greenchilli",
+  "peas",
+  "bottlegourd",
+  "ridgegourd",
+  "bittergourd",
+  "pumpkin",
+  "mango",
+  "papaya",
+  "orange",
+  "grapes",
+  "guava",
+  "pomegranate",
+  "coconut",
+  "coffee",
+  "sugarcane",
+]);
+
+function getCropTerms(crop) {
+  return [crop?.c, ...(crop?.aliases || [])].filter(Boolean);
+}
+
+export function findMatchingCrop(name, source = CROPS_DATA) {
+  const key = normalizeCropName(name);
+  if (!key) return null;
+
+  const exact = source.find(crop =>
+    getCropTerms(crop).some(term => normalizeCropName(term) === key)
+  );
+  if (exact) return exact;
+  if (key.length < 3) return null;
+
+  return source.find(crop =>
+    getCropTerms(crop).some(term => {
+      const termKey = normalizeCropName(term);
+      return termKey.startsWith(key) || key.startsWith(termKey);
+    })
+  ) || null;
+}
+
+export function inferCropMeta(name) {
+  const match = findMatchingCrop(name);
+  return match
+    ? { c: match.c, bp: match.bp, e: match.e, cat: match.cat, aliases: match.aliases || [] }
+    : null;
+}
+
+export function guessHarvestTypeForCrop(name, category = "") {
+  const match = findMatchingCrop(name);
+  const cropKey = normalizeCropName(match?.c || name);
+  const cropCategory = match?.cat || category;
+
+  if (REGROWTH_CROP_KEYS.has(cropKey)) {
+    return "regrows";
+  }
+
+  if (cropCategory === "Grains" || cropCategory === "Pulses" || cropCategory === "Oilseeds" || cropCategory === "Spices") {
+    return "single_harvest";
+  }
+
+  if (cropCategory === "Fruits" || cropCategory === "Cash Crops") {
+    return "regrows";
+  }
+
+  return "single_harvest";
+}
 
 export const DEMO_USERS = [
   {

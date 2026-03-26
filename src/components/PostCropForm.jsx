@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { KA_LOCS } from "../data/constants.js";
+import { KA_LOCS, findMatchingCrop, guessHarvestTypeForCrop, inferCropMeta } from "../data/constants.js";
 import { uid, fmtP } from "../utils/helpers.js";
 import { dbPut } from "../db/indexedDB.js";
-import { SmartPriceCalculator } from "./SmartPriceCalculator.jsx";
+import { getSingleHarvestEstimate, SmartPriceCalculator } from "./SmartPriceCalculator.jsx";
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 const HARVEST_TYPE_OPTIONS = [
   {
@@ -25,12 +27,68 @@ function emptyPricingState(mode = "") {
   return {
     pricingMode: mode,
     costPerKg: 0,
+    estimatedCostPerKg: 0,
     expectedPrice: 0,
     totalProductionCost: 0,
     profitTarget: 20,
     costBreakdown: null,
     demandInsights: null,
   };
+}
+
+function getTodayInputValue() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => resolve(ev.target.result);
+    reader.onerror = () => reject(new Error("Could not read this photo."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fileToListingDataUrl(file, { maxSide = 1600, quality = 0.82 } = {}) {
+  const originalDataUrl = await readFileAsDataUrl(file);
+
+  if (!String(file?.type || "").startsWith("image/")) {
+    return originalDataUrl;
+  }
+
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const preview = new Image();
+      preview.onload = () => resolve(preview);
+      preview.onerror = () => reject(new Error("Could not open this image."));
+      preview.src = originalDataUrl;
+    });
+
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const longestSide = Math.max(width, height);
+
+    if (!longestSide || longestSide <= maxSide) {
+      return originalDataUrl;
+    }
+
+    const scale = maxSide / longestSide;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return originalDataUrl;
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", quality);
+  } catch (_) {
+    return originalDataUrl;
+  }
 }
 
 export default function PostCropForm({ user, rates, onPost, onCancel }) {
@@ -43,7 +101,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
     basePrice: "",
     minBid: "",
     harvestType: "",
-    readyDate: "",
+    readyDate: getTodayInputValue(),
     village: user.village || "",
     district: user.district || "",
     pin: user.pin || "",
@@ -55,20 +113,101 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
   const [locs, setLocs] = useState([]);
+  const [scanLoading, setScanLoading] = useState(false);
+  const [scanErr, setScanErr] = useState("");
+  const [scanResult, setScanResult] = useState(null);
+
+  function applyPricingToDraft(draft, result) {
+    return {
+      ...draft,
+      pricingMode: result.pricingMode || "",
+      minBid: result.minBid,
+      costPerKg: result.costPerKg || 0,
+      estimatedCostPerKg: result.estimatedCostPerKg || result.costPerKg || 0,
+      totalProductionCost: result.totalProductionCost || 0,
+      profitTarget: result.profitTarget || 0,
+      expectedPrice: result.expectedPrice || 0,
+      costBreakdown: result.costBreakdown || null,
+      demandInsights: result.demandInsights || null,
+    };
+  }
+
+  function derivePricingDraft(draft, { keepManualRegrowBid = false } = {}) {
+    const marketRate = findMatchingCrop(draft.cropName, rates);
+    const apmcRate = Number(marketRate?.price || draft.basePrice || 0);
+
+    if (draft.harvestType === "single_harvest") {
+      if (Number(draft.quantity) > 0 && draft.category) {
+        return applyPricingToDraft(
+          draft,
+          getSingleHarvestEstimate({
+            quantity: draft.quantity,
+            category: draft.category,
+            marketRate,
+            apmcPrice: apmcRate,
+          })
+        );
+      }
+
+      return {
+        ...draft,
+        ...emptyPricingState(""),
+        minBid: "",
+      };
+    }
+
+    if (draft.harvestType === "regrows") {
+      const defaultMinBid = apmcRate ? Math.round(apmcRate * 0.85) : draft.minBid;
+      return {
+        ...draft,
+        ...emptyPricingState("manual_regrows"),
+        minBid: keepManualRegrowBid && Number(draft.minBid) > 0 ? draft.minBid : defaultMinBid,
+      };
+    }
+
+    return draft;
+  }
 
   function h(e) {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+
+    if (name === "cropName") {
+      const meta = inferCropMeta(value);
+      const liveRate = findMatchingCrop(value, rates);
+      setForm(f => derivePricingDraft({
+        ...f,
+        cropName: value,
+        emoji: meta?.e || "🌾",
+        category: meta?.cat || "",
+        basePrice: meta ? Math.round(liveRate?.price || meta.bp) : (value ? f.basePrice : ""),
+      }));
+      setScanResult(null);
+      return;
+    }
+
+    if (name === "quantity") {
+      setForm(f => derivePricingDraft({ ...f, quantity: value }, { keepManualRegrowBid: true }));
+      return;
+    }
+
+    if (name === "basePrice") {
+      setForm(f => derivePricingDraft({ ...f, basePrice: value }));
+      return;
+    }
+
+    setForm(f => ({ ...f, [name]: value }));
   }
 
   function selCrop(rate) {
-    setForm(f => ({
+    setForm(f => derivePricingDraft({
       ...f,
       cropName: rate.c,
       emoji: rate.e,
       category: rate.cat,
       basePrice: Math.round(rate.price),
-      minBid: f.harvestType === "single_harvest" ? f.minBid : Math.round(rate.price * 0.85),
+      harvestType: guessHarvestTypeForCrop(rate.c, rate.cat),
     }));
+    setScanResult(null);
   }
 
   function searchLoc(value) {
@@ -91,20 +230,22 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
     setLocs([]);
   }
 
-  function addPhoto(e) {
+  async function addPhoto(e) {
     const file = e.target.files[0];
-    if (!file || photos.length >= 4) return;
-    const reader = new FileReader();
-    reader.onload = ev => setPhotos(list => [...list, ev.target.result]);
-    reader.readAsDataURL(file);
+    if (!file || photos.length >= 4) {
+      e.target.value = "";
+      return;
+    }
+
+    const imageDataUrl = await fileToListingDataUrl(file);
+    setPhotos(list => [...list, imageDataUrl].slice(0, 4));
     e.target.value = "";
   }
 
   function selectHarvestType(value) {
-    setForm(f => ({
+    setForm(f => derivePricingDraft({
       ...f,
       harvestType: value,
-      ...(value === "regrows" ? emptyPricingState("manual_regrows") : emptyPricingState("")),
     }));
     setErr("");
   }
@@ -115,6 +256,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
       pricingMode: result.pricingMode || "",
       minBid: result.minBid,
       costPerKg: result.costPerKg || 0,
+      estimatedCostPerKg: result.estimatedCostPerKg || result.costPerKg || 0,
       totalProductionCost: result.totalProductionCost || 0,
       profitTarget: result.profitTarget || 0,
       expectedPrice: result.expectedPrice || 0,
@@ -122,6 +264,70 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
       demandInsights: result.demandInsights || null,
     }));
     setErr("");
+  }
+
+  async function scanCropPhoto(e) {
+    const file = e.target.files[0];
+    e.target.value = "";
+
+    if (!file) return;
+
+    setScanLoading(true);
+    setScanErr("");
+
+    try {
+      const imageDataUrl = await fileToListingDataUrl(file, { maxSide: 1400, quality: 0.8 });
+      setPhotos(list => (list.includes(imageDataUrl) ? list : [imageDataUrl, ...list].slice(0, 4)));
+
+      const response = await fetch(`${API_BASE}/ai/crop-photo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageDataUrl }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || "Could not analyze this crop photo.");
+      }
+
+      setForm(current => {
+        const meta = inferCropMeta(payload.cropName);
+        const liveRate = findMatchingCrop(payload.cropName, rates);
+        const resolvedHarvestType = payload.harvestType || guessHarvestTypeForCrop(payload.cropName, meta?.cat || payload.category);
+
+        return derivePricingDraft({
+          ...current,
+          cropName: meta?.c || payload.cropName || current.cropName,
+          emoji: meta?.e || payload.emoji || "🌾",
+          category: meta?.cat || payload.category || current.category,
+          harvestType: resolvedHarvestType,
+          basePrice: Math.round(liveRate?.price || meta?.bp || current.basePrice || 0) || current.basePrice,
+          readyDate: current.readyDate || getTodayInputValue(),
+        });
+      });
+
+      setScanResult({
+        cropName: payload.cropName,
+        emoji: payload.emoji,
+        category: payload.category,
+        harvestType: payload.harvestType,
+        confidence: payload.confidence,
+        summary: payload.summary,
+        visibleFeatures: payload.visibleFeatures || [],
+        scanPath: payload.scanPath || "primary",
+        model: payload.model || "",
+      });
+      setErr("");
+    } catch (error) {
+      const message = String(error?.message || "");
+      setScanErr(
+        message.includes("fetch")
+          ? "Crop scan needs the local API server running. Start the app with npm run dev and try again."
+          : message
+      );
+    } finally {
+      setScanLoading(false);
+    }
   }
 
   async function submit() {
@@ -149,6 +355,7 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
       basePrice: Number(form.basePrice) || Number(form.minBid),
       minBid: Number(form.minBid),
       costPerKg: Number(form.costPerKg) || 0,
+      estimatedCostPerKg: Number(form.estimatedCostPerKg) || Number(form.costPerKg) || 0,
       expectedPrice: Number(form.expectedPrice) || 0,
       totalProductionCost: Number(form.totalProductionCost) || 0,
       profitTarget: Number(form.profitTarget) || 20,
@@ -168,9 +375,15 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
     onPost(crop);
   }
 
-  const marketRate = rates.find(rate => rate.c.toLowerCase() === form.cropName.toLowerCase());
-  const apmcRate = marketRate?.price || 0;
-  const suggestions = rates.filter(rate => !form.cropName || rate.c.toLowerCase().includes(form.cropName.toLowerCase())).slice(0, 10);
+  const marketRate = findMatchingCrop(form.cropName, rates);
+  const apmcRate = marketRate?.price || Number(form.basePrice) || 0;
+  const suggestions = rates
+    .filter(rate => {
+      if (!form.cropName) return true;
+      const q = form.cropName.toLowerCase();
+      return [rate.c, ...(rate.aliases || [])].some(term => term.toLowerCase().includes(q));
+    })
+    .slice(0, 10);
 
   const inp = {
     padding: "9px 12px",
@@ -222,6 +435,75 @@ export default function PostCropForm({ user, rates, onPost, onCancel }) {
       {step === 1 && (
         <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 20, padding: 24, boxShadow: "var(--shadow-sm)" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <div style={{ background: "linear-gradient(135deg, #fff7ed, #fefce8)", border: "1px solid #fde68a", borderRadius: 16, padding: "16px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#b45309", textTransform: "uppercase", letterSpacing: 0.6 }}>
+                    AI Crop Photo Scan
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
+                    Upload one crop photo and we’ll fill the crop details automatically
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 5, lineHeight: 1.55 }}>
+                    Best for common vegetables, fruits, grains, pulses, oilseeds, spices and cash crops in your catalog. You mostly just add quantity and continue.
+                  </div>
+                </div>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 16px", borderRadius: 12, background: scanLoading ? "#fed7aa" : "#ea580c", color: "#fff", fontSize: 13, fontWeight: 800, cursor: scanLoading ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: scanLoading ? 0.85 : 1 }}>
+                  {scanLoading ? "⏳ Scanning crop..." : "📷 Scan crop photo"}
+                  <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={scanCropPhoto} disabled={scanLoading} />
+                </label>
+              </div>
+
+              {scanResult && (
+                <div style={{ marginTop: 14, background: "#fff", border: "1px solid #fed7aa", borderRadius: 12, padding: "12px 14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#b45309", textTransform: "uppercase", letterSpacing: 0.6 }}>
+                        Detected Crop
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
+                        {scanResult.emoji || "🌾"} {scanResult.cropName}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ background: scanResult.scanPath === "fallback" ? "#eff6ff" : "#ecfdf5", color: scanResult.scanPath === "fallback" ? "#1d4ed8" : "#166534", border: `1px solid ${scanResult.scanPath === "fallback" ? "#93c5fd" : "#86efac"}`, borderRadius: 999, padding: "5px 10px", fontSize: 11, fontWeight: 700 }}>
+                        {scanResult.scanPath === "fallback" ? "Fallback scan used" : "Primary AI scan"}
+                      </span>
+                      <span style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fdba74", borderRadius: 999, padding: "5px 10px", fontSize: 11, fontWeight: 700 }}>
+                        {Math.round(Number(scanResult.confidence || 0) * 100)}% confidence
+                      </span>
+                      <span style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #86efac", borderRadius: 999, padding: "5px 10px", fontSize: 11, fontWeight: 700 }}>
+                        {getHarvestTypeLabel(scanResult.harvestType)}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 8, lineHeight: 1.55 }}>
+                    {scanResult.summary}
+                  </div>
+                  {scanResult.model && (
+                    <div style={{ fontSize: 11, color: "var(--text4)", marginTop: 6 }}>
+                      Model: {scanResult.model}
+                    </div>
+                  )}
+                  {scanResult.visibleFeatures?.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                      {scanResult.visibleFeatures.map(feature => (
+                        <span key={feature} style={{ background: "#fffaf0", color: "#9a3412", border: "1px solid #fdba74", borderRadius: 999, padding: "4px 8px", fontSize: 10, fontWeight: 700 }}>
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {scanErr && (
+                <div style={{ marginTop: 12, background: "#fff1f2", border: "1px solid #fda4af", borderRadius: 12, padding: "10px 12px", fontSize: 12, color: "#be123c", lineHeight: 1.5 }}>
+                  ⚠️ {scanErr}
+                </div>
+              )}
+            </div>
+
             <div>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
                 Quick select crop (APMC price auto-fills)

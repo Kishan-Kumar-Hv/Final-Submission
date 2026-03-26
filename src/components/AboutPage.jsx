@@ -19,8 +19,8 @@ export default function AboutPage({ setPage, lang }) {
         },
         {
           icon: "📊",
-          title: "ಲೈವ್ ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆ ದರಗಳು",
-          desc: "ಕರ್ನಾಟಕದ ಪ್ರಮುಖ ಮಂಡಿಗಳ ದರಗಳು ರೈತರಿಗೆ ಆಫರ್‌ಗಳನ್ನು ಹೋಲಿಸಿ ಸರಿಯಾದ ಆರಂಭಿಕ ಬೆಲೆ ನಿಗದಿಪಡಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತವೆ.",
+          title: "ದೈನಂದಿನ ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆ ದರಗಳು",
+          desc: "ಕರ್ನಾಟಕದ ಪ್ರಮುಖ ಮಂಡಿಗಳ ದರಗಳು ದಿನಕ್ಕೊಮ್ಮೆ ನವೀಕರಿಸಿ ರೈತರಿಗೆ ಆಫರ್‌ಗಳನ್ನು ಹೋಲಿಸಿ ಸರಿಯಾದ ಆರಂಭಿಕ ಬೆಲೆ ನಿಗದಿಪಡಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತವೆ.",
         },
         {
           icon: "📸",
@@ -51,8 +51,8 @@ export default function AboutPage({ setPage, lang }) {
         },
         {
           icon: "📊",
-          title: "Live APMC Market Rates",
-          desc: "Market prices from major Karnataka mandis help farmers compare offers and decide the right auction floor before posting.",
+          title: "Daily APMC Market Rates",
+          desc: "Stable daily prices from major Karnataka mandis help farmers compare offers and choose the right auction floor before posting.",
         },
         {
           icon: "📸",

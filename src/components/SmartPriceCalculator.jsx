@@ -40,6 +40,19 @@ const PROFILE_BY_CATEGORY = {
       sortingTransport: 0.2,
     },
   },
+  Pulses: {
+    costShare: 0.55,
+    floorShare: 0.44,
+    overheadFloor: 4.6,
+    replantingWeight: 1.1,
+    breakdown: {
+      landPrepReplant: 0.2,
+      seedsNursery: 0.16,
+      cropCare: 0.18,
+      labourHarvest: 0.25,
+      sortingTransport: 0.21,
+    },
+  },
   Oilseeds: {
     costShare: 0.56,
     floorShare: 0.44,
@@ -215,7 +228,7 @@ function buildBreakdown(totalProductionCost, quantity, profile) {
   );
 }
 
-function getSingleHarvestEstimate({ quantity, category, marketRate, apmcPrice }) {
+export function getSingleHarvestEstimate({ quantity, category, marketRate, apmcPrice }) {
   const qty = Math.max(1, Number(quantity) || 0);
   const profile = PROFILE_BY_CATEGORY[category] || PROFILE_BY_CATEGORY.default;
   const demand = getDemandInsight(marketRate, apmcPrice);
@@ -267,6 +280,35 @@ function getSingleHarvestEstimate({ quantity, category, marketRate, apmcPrice })
   };
 }
 
+function getRegrowthEstimate({ quantity, category, marketRate, apmcPrice }) {
+  const qty = Math.max(1, Number(quantity) || 0);
+  const profile = PROFILE_BY_CATEGORY[category] || PROFILE_BY_CATEGORY.default;
+  const demand = getDemandInsight(marketRate, apmcPrice);
+  const referencePrice = Number(demand.livePrice || apmcPrice || 1);
+  const handlingFloor = profile.overheadFloor * 0.68 + Math.min(2.2, 110 / qty);
+  const recurringCostShare = profile.costShare * 0.46;
+  const recurringFloorShare = profile.floorShare * 0.58;
+  const rawCostPerKg = Math.max(
+    referencePrice * recurringCostShare,
+    demand.baselinePrice * recurringFloorShare,
+    handlingFloor
+  );
+
+  const costPerKg = round2(rawCostPerKg * (demand.level === "Soft demand" ? 1.03 : 0.98));
+  const totalProductionCost = round2(costPerKg * qty);
+
+  return {
+    demand,
+    referencePrice,
+    estimatedCostPerKg: costPerKg,
+    estimatedRecurringCost: totalProductionCost,
+    presets: REGROWTH_PRESETS.map(preset => ({
+      ...preset,
+      price: Math.max(1, Math.round(referencePrice * preset.multiplier)),
+    })),
+  };
+}
+
 function getRegrowthGuidance(marketRate, apmcPrice) {
   const demand = getDemandInsight(marketRate, apmcPrice);
   const referencePrice = Number(demand.livePrice || apmcPrice || 0);
@@ -287,6 +329,24 @@ function getTopBreakdownItems(costBreakdown) {
     .slice(0, 3);
 }
 
+export function getEstimatedFarmerCostPerKg(crop, marketRate) {
+  const explicitCost = Number(crop?.estimatedCostPerKg || crop?.costPerKg || 0);
+  if (explicitCost > 0) return explicitCost;
+
+  if (crop?.harvestType === "regrows") {
+    const regrowthEstimate = getRegrowthEstimate({
+      quantity: crop?.quantity,
+      category: crop?.category,
+      marketRate,
+      apmcPrice: Number(crop?.demandInsights?.livePrice || crop?.basePrice || crop?.minBid || 0),
+    });
+
+    return Number(regrowthEstimate.estimatedCostPerKg || 0);
+  }
+
+  return 0;
+}
+
 export function SmartPriceCalculator({
   harvestType,
   quantity,
@@ -304,8 +364,8 @@ export function SmartPriceCalculator({
 
   const regrowthGuidance = useMemo(() => {
     if (harvestType !== "regrows") return null;
-    return getRegrowthGuidance(marketRate, apmcPrice);
-  }, [harvestType, marketRate, apmcPrice]);
+    return getRegrowthEstimate({ quantity, category, marketRate, apmcPrice });
+  }, [harvestType, quantity, category, marketRate, apmcPrice]);
 
   useEffect(() => {
     if (harvestType) setOpen(true);
@@ -317,12 +377,14 @@ export function SmartPriceCalculator({
       minBid: price,
       expectedPrice: 0,
       costPerKg: 0,
-      totalProductionCost: 0,
+      estimatedCostPerKg: regrowthGuidance?.estimatedCostPerKg || 0,
+      totalProductionCost: regrowthGuidance?.estimatedRecurringCost || 0,
       profitTarget: 0,
       costBreakdown: null,
       demandInsights: regrowthGuidance
         ? {
             ...regrowthGuidance.demand,
+            recurringCostPerKg: regrowthGuidance.estimatedCostPerKg,
             approxModel: `Manual market guidance for regrowing crop (${preset.label.toLowerCase()})`,
           }
         : null,
@@ -411,6 +473,10 @@ export function SmartPriceCalculator({
                   </div>
                   <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>vs base market price</div>
                 </div>
+              </div>
+
+              <div style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 12, color: "#4b7a4e", lineHeight: 1.55 }}>
+                Approx recurring farm cost for profit tracking: <strong>{money(regrowthGuidance.estimatedCostPerKg)}/kg</strong>. This keeps seed and full replanting cost out, but still counts labour, crop care and harvest effort.
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
@@ -644,6 +710,132 @@ export function CostBadge({ crop }) {
       <div style={{ fontSize: 10, color: "#4b7a4e", marginTop: 7, lineHeight: 1.5 }}>
         Safe floor protects roughly {minProfit.toFixed(0)}% margin above estimated effort cost.
         {crop.demandInsights?.approxModel ? ` ${crop.demandInsights.approxModel}.` : ""}
+      </div>
+    </div>
+  );
+}
+
+export function FarmerProfitHint({ crop, marketRate }) {
+  const qty = Math.max(1, Number(crop.quantity) || 0);
+  const safeFloor = Number(crop.demandInsights?.recommendedFloor || crop.minBid || 0);
+  const acceptedPrice = Number(crop.acceptedPrice || 0);
+  const livePrice = Number(crop.demandInsights?.livePrice || marketRate?.price || crop.basePrice || 0);
+  const estimatedCost = getEstimatedFarmerCostPerKg(crop, marketRate);
+  const targetPrice = Number(
+    acceptedPrice ||
+    crop.demandInsights?.targetClose ||
+    crop.expectedPrice ||
+    safeFloor ||
+    crop.minBid ||
+    livePrice ||
+    0
+  );
+
+  if (!qty || !targetPrice) return null;
+
+  let tone = "#15803d";
+  let bg = "#f0fdf4";
+  let border = "#86efac";
+  let badge = "Good";
+  let headline = "";
+  let detail = "";
+  let amount = 0;
+  let amountLabel = "expected gain";
+
+  if (estimatedCost > 0) {
+    const costPkg = estimatedCost;
+    const gainPerKg = targetPrice - costPkg;
+    const marginPct = costPkg > 0 ? (gainPerKg / costPkg) * 100 : 0;
+
+    amount = Math.max(gainPerKg * qty, 0);
+    headline = acceptedPrice
+      ? `This order may earn about ${money(amount)} for you`
+      : `Near this price, you may earn about ${money(amount)}`;
+    detail = acceptedPrice
+      ? `Accepted at ${money(targetPrice)}/kg. Try to stay above ${money(safeFloor)}/kg on similar crops.`
+      : `Good to accept near ${money(targetPrice)}/kg. Try not to go below ${money(safeFloor)}/kg.`;
+
+    if (marginPct < 25) {
+      tone = "#92400e";
+      bg = "#fffbeb";
+      border = "#fde68a";
+      badge = "Fair";
+    }
+    if (marginPct < 10) {
+      tone = "#c2410c";
+      bg = "#fff7ed";
+      border = "#fed7aa";
+      badge = "Low";
+      detail = acceptedPrice
+        ? `Accepted close to cost. Try to stay above ${money(safeFloor)}/kg next time.`
+        : `This is close to cost. Try to stay near ${money(safeFloor)}/kg or above.`;
+    }
+    if (marginPct < 0) {
+      tone = "#dc2626";
+      bg = "#fef2f2";
+      border = "#fca5a5";
+      badge = "Risk";
+      amount = Math.abs(gainPerKg * qty);
+      amountLabel = "possible loss";
+      headline = acceptedPrice
+        ? `This order is about ${money(amount)} below effort cost`
+        : `This price can drop about ${money(amount)} below effort cost`;
+      detail = `Try to stay above ${money(safeFloor)}/kg before accepting.`;
+    }
+  } else {
+    const floorPrice = Number(crop.minBid || 0);
+    const extraAboveFloor = Math.max((targetPrice - floorPrice) * qty, 0);
+    const premiumPct = floorPrice > 0 ? ((targetPrice - floorPrice) / floorPrice) * 100 : 0;
+
+    amount = extraAboveFloor;
+    amountLabel = "above your floor";
+    headline = extraAboveFloor > 0
+      ? acceptedPrice
+        ? `This order is about ${money(extraAboveFloor)} above your floor`
+        : `This price can add about ${money(extraAboveFloor)} above your floor`
+      : "This price stays close to your floor";
+    detail = livePrice > 0
+      ? `Live mandi is around ${money(livePrice)}/kg.`
+      : "Set near the live market for a faster sale.";
+
+    if (premiumPct < 8) {
+      tone = "#92400e";
+      bg = "#fffbeb";
+      border = "#fde68a";
+      badge = "Fair";
+    }
+    if (premiumPct < 3) {
+      tone = "#6b7280";
+      bg = "#f8fafc";
+      border = "#dbe5ef";
+      badge = "Near floor";
+    }
+  }
+
+  return (
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 12, padding: "11px 12px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: tone, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Farmer profit guide
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginTop: 5, lineHeight: 1.45 }}>
+            {headline}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4, lineHeight: 1.5 }}>
+            {detail}
+          </div>
+        </div>
+
+        <div style={{ minWidth: 92, textAlign: "right", flexShrink: 0 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#fff", border: `1px solid ${border}`, borderRadius: 999, padding: "4px 9px", fontSize: 10, fontWeight: 800, color: tone }}>
+            {badge}
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: tone, marginTop: 7 }}>
+            {money(amount)}
+          </div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>{amountLabel}</div>
+        </div>
       </div>
     </div>
   );

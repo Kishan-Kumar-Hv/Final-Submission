@@ -11,7 +11,7 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
 
   function NavBtn({ label, active, onClick }) {
     return (
-      <button onClick={onClick} style={{ background: active ? "var(--green-pale)" : "transparent", color: active ? "var(--green)" : "var(--text2)", border: "none", padding: "7px 16px", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", transition: "all .15s" }}
+      <button onClick={onClick} style={{ background: active ? "rgba(102,122,47,.12)" : "transparent", color: active ? "var(--green)" : "var(--text2)", border: "none", padding: "7px 16px", borderRadius: 999, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit", transition: "all .15s" }}
         onMouseOver={e => { if (!active) e.currentTarget.style.color = "var(--green)"; }}
         onMouseOut={e => { if (!active) e.currentTarget.style.color = "var(--text2)"; }}>
         {label}
@@ -20,14 +20,14 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
   }
 
   return (
-    <nav onClick={() => setNotifOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, height: 64, background: "#fff", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
+    <nav onClick={() => setNotifOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, height: 64, background: "linear-gradient(90deg, rgba(251,248,238,.97), rgba(255,252,245,.97))", borderBottom: "1px solid rgba(200,132,34,.16)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", boxShadow: "0 6px 24px rgba(102,122,47,.08)" }}>
 
       {/* Logo — always goes to dashboard if logged in, else home */}
       <div onClick={() => setPage(user ? "portal" : "home")} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}>
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🌿</div>
+        <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, #9a5523 0%, #c88422 45%, #667a2f 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 8px 18px rgba(154,85,35,.22)" }}>🌾</div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text)", lineHeight: 1 }}>{lang === "en" ? "Raitha Reach" : "ರೈತ ರೀಚ್"}</div>
-          <div style={{ fontSize: 10, color: "var(--text3)", fontWeight: 500, letterSpacing: .4 }}>{pick(lang, "FARM DIRECT AUCTION", "ಕೃಷಿ ನೇರ ಹರಾಜು")}</div>
+          <div style={{ fontSize: 10, color: "#9a5523", fontWeight: 700, letterSpacing: .6 }}>{pick(lang, "FARM DIRECT MARKET", "ಕೃಷಿ ನೇರ ಮಾರುಕಟ್ಟೆ")}</div>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function Navbar({ page, setPage, user, onLogout, lang, setLang, n
 
         {/* Login button (logged out only) */}
         {!user && (
-          <button onClick={() => setPage("auth")} style={{ background: "var(--green)", color: "#fff", border: "none", padding: "8px 20px", borderRadius: 9, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}>
+          <button onClick={() => setPage("auth")} style={{ background: "linear-gradient(135deg, var(--gold), var(--green))", color: "#fff", border: "none", padding: "8px 20px", borderRadius: 999, cursor: "pointer", fontSize: 14, fontWeight: 800, fontFamily: "inherit", boxShadow: "0 10px 24px rgba(200,132,34,.2)" }}>
             {pick(lang, "Get Started", "ಪ್ರಾರಂಭಿಸಿ")}
           </button>
         )}

@@ -75,6 +75,7 @@ const categoryMap = {
   All: "ಎಲ್ಲಾ",
   Vegetables: "ತರಕಾರಿಗಳು",
   Grains: "ಧಾನ್ಯಗಳು",
+  Pulses: "ಬೇಳೆ ಕಾಳುಗಳು",
   Oilseeds: "ಎಣ್ಣೆ ಬೀಜಗಳು",
   Spices: "ಮಸಾಲೆಗಳು",
   "Cash Crops": "ವಾಣಿಜ್ಯ ಬೆಳೆಗಳು",

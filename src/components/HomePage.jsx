@@ -15,12 +15,12 @@ export default function HomePage({ setPage, lang }) {
     ? [["₹0","ಕಮಿಷನ್ ಇಲ್ಲ"],["35L+","ಕರ್ನಾಟಕದ ರೈತರು"],["18+","ವ್ಯಾಪ್ತಿಯ ಜಿಲ್ಲೆಗಳು"],["24/7","ಲೈವ್ ಹರಾಜುಗಳು"]]
     : [["₹0","Commission charged"],["35L+","Karnataka farmers"],["18+","Districts covered"],["24/7","Live auctions"]];
   const trustItems = lang === "kn"
-    ? [["✅","ನೋಂದಣಿ ಶುಲ್ಕ ಇಲ್ಲ"],["🔒","ಸುರಕ್ಷಿತ ಮತ್ತು ಖಾಸಗಿ ಲಿಸ್ಟಿಂಗ್‌ಗಳು"],["📞","ರೈತರ ನೇರ ಸಂಪರ್ಕ"],["📊","ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು"],["🚛","ಫಾರ್ಮ್ ಗೇಟ್ ಪಿಕಪ್"],["🏆","ಕರ್ನಾಟಕ ರೈತರಿಗಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ"]]
-    : [["✅","Zero registration fee"],["🔒","Secure & private listings"],["📞","Direct farmer contact"],["📊","Live APMC mandi rates"],["🚛","Farm gate pickup"],["🏆","Built for Karnataka farmers"]];
+    ? [["✅","ನೋಂದಣಿ ಶುಲ್ಕ ಇಲ್ಲ"],["🔒","ಸುರಕ್ಷಿತ ಮತ್ತು ಖಾಸಗಿ ಲಿಸ್ಟಿಂಗ್‌ಗಳು"],["📞","ರೈತರ ನೇರ ಸಂಪರ್ಕ"],["📊","ದೈನಂದಿನ ಎಪಿಎಂಸಿ ದರಗಳು"],["🚛","ಫಾರ್ಮ್ ಗೇಟ್ ಪಿಕಪ್"],["🏆","ಕರ್ನಾಟಕ ರೈತರಿಗಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ"]]
+    : [["✅","Zero registration fee"],["🔒","Secure & private listings"],["📞","Direct farmer contact"],["📊","Daily APMC mandi rates"],["🚛","Farm gate pickup"],["🏆","Built for Karnataka farmers"]];
   const introCards = lang === "kn"
     ? [
         {icon:"🔥",title:"ಲೈವ್ ಬಿಡ್ ಹರಾಜುಗಳು",desc:"ಖರೀದಿದಾರರು ರಿಯಲ್-ಟೈಮ್‌ನಲ್ಲಿ ಸ್ಪರ್ಧಿಸುತ್ತಾರೆ. ರೈತರಿಗೆ ಎಲ್ಲಾ ಬಿಡ್‌ಗಳು ದೊಡ್ಡದರಿಂದ ಚಿಕ್ಕದಾಗಿ ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣಿಸುತ್ತವೆ."},
-        {icon:"📊",title:"ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು",desc:"ಮೈಸೂರು, ಹುಬ್ಬಳ್ಳಿ, ಹಾಸನ ಮತ್ತು ದಾವಣಗೆರೆಯ ಮಾರುಕಟ್ಟೆ ದರಗಳು ನಿರಂತರವಾಗಿ ನವೀಕರಿಸುತ್ತವೆ, ರೈತರಿಗೆ ಸರಿಯಾದ ಬೆಲೆ ಅರಿವು ಕೊಡುತ್ತವೆ."},
+        {icon:"📊",title:"ದೈನಂದಿನ ಎಪಿಎಂಸಿ ದರಗಳು",desc:"ಮೈಸೂರು, ಹುಬ್ಬಳ್ಳಿ, ಹಾಸನ ಮತ್ತು ದಾವಣಗೆರೆಯ ಮಾರುಕಟ್ಟೆ ದರಗಳು ದಿನಕ್ಕೊಮ್ಮೆ ನವೀಕರಿಸುತ್ತವೆ, ರೈತರಿಗೆ ಸ್ಥಿರ ಮತ್ತು ನಂಬಿಕಸ್ಥ ಬೆಲೆ ಅರಿವು ಕೊಡುತ್ತವೆ."},
         {icon:"🚛",title:"ನೇರ ಫಾರ್ಮ್ ಪಿಕಪ್",desc:"ವಿತರಣಾ ಸಹಭಾಗಿಗಳು ಫಾರ್ಮ್ ಗೇಟ್‌ಗೆ ಬರುತ್ತಾರೆ. ರೈತರಿಗೆ ಸಾರಿಗೆ ವೆಚ್ಚ ಉಳಿಯುತ್ತದೆ ಮತ್ತು ಉತ್ಪನ್ನವು ಬೇಗ ಖರೀದಿದಾರರಿಗೆ ತಲುಪುತ್ತದೆ."},
         {icon:"📸",title:"ನಿಜವಾದ ಬೆಳೆ ಫೋಟೋಗಳು",desc:"ಗರಿಷ್ಠ 4 ನಿಜವಾದ ಬೆಳೆ ಫೋಟೋಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ. ನಂಬಿಕೆ ಹೆಚ್ಚಾಗಿ ಉತ್ತಮ ಬಿಡ್‌ಗಳನ್ನು ಪಡೆಯಬಹುದು."},
         {icon:"📍",title:"18+ ಕರ್ನಾಟಕ ಜಿಲ್ಲೆಗಳು",desc:"ಪಿನ್ ಕೋಡ್‌ಗಳೊಂದಿಗೆ ವಿಳಾಸ ಸೂಚನೆ. ನಿಮ್ಮ ಫಾರ್ಮ್ ಸ್ಥಳ ವಿತರಣಾ ಸಹಭಾಗಿಗೆ ಸರಿಯಾಗಿ ತಲುಪುತ್ತದೆ."},
@@ -28,7 +28,7 @@ export default function HomePage({ setPage, lang }) {
       ]
     : [
         {icon:"🔥",title:"Live Bidding Auctions",desc:"Retailers compete in real-time. Farmer sees every bid ranked from highest to lowest. Accept the best — no pressure, no deadline."},
-        {icon:"📊",title:"Live APMC Market Rates",desc:"Karnataka mandi prices from Mysuru, Hubli, Hassan & Davangere update every 4 seconds so farmers always know exactly what their crop is worth."},
+        {icon:"📊",title:"Daily APMC Market Rates",desc:"Karnataka mandi prices from Mysuru, Hubli, Hassan and Davangere stay stable through the day and refresh once daily, so farmers get a believable market reference."},
         {icon:"🚛",title:"Direct Farm Pickup",desc:"Delivery partners go to the farm gate. Farmers save ₹2,000–5,000 per trip in transport costs. Fresh produce reaches retailers faster."},
         {icon:"📸",title:"Real Crop Photos",desc:"Upload up to 4 actual crop photos. Retailers inspect quality before bidding — builds trust, increases bid count by 3×."},
         {icon:"📍",title:"18+ Karnataka Districts",desc:"Auto-complete addresses with PIN codes for all major Karnataka districts. Delivery gets the exact GPS location of your farm."},
@@ -78,8 +78,8 @@ export default function HomePage({ setPage, lang }) {
         {icon:"📞",title:"Direct contact with buyers",desc:"Every retailer's phone number is shown. Call them directly. No mysterious agents. No hidden fees. Real people, real deals."},
       ];
   const statBlocks = lang === "kn"
-    ? [["35L+","ಕರ್ನಾಟಕದ ರೈತರು","ಕರ್ನಾಟಕದಲ್ಲೇ ಸಾಧ್ಯ ಬಳಕೆದಾರರು"],["₹0","ಕಮಿಷನ್ ವಸೂಲಿ","ಪ್ರಾರಂಭದಲ್ಲೂ ನಂತರವೂ ಶುಲ್ಕ ಇಲ್ಲ"],["18+","ವ್ಯಾಪ್ತಿಯ ಜಿಲ್ಲೆಗಳು","ಹಾಸನದಿಂದ ಬೀದರ್‌ವರೆಗೆ ಪ್ರಮುಖ ಜಿಲ್ಲೆಗಳು"],["4 ಸೆಕೆಂ","ದರ ನವೀಕರಣ ವೇಗ","ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು, ಪ್ರತಿ 4 ಸೆಕೆಂಡಿಗೆ"]]
-    : [["35L+","Karnataka Farmers","Potential users in Karnataka alone"],["₹0","Commission Charged","Zero fees — launch phase and beyond"],["18+","Districts Covered","From Hassan to Bidar, all major districts"],["4 sec","Rate Update Speed","Live APMC mandi prices, every 4 seconds"]];
+    ? [["35L+","ಕರ್ನಾಟಕದ ರೈತರು","ಕರ್ನಾಟಕದಲ್ಲೇ ಸಾಧ್ಯ ಬಳಕೆದಾರರು"],["₹0","ಕಮಿಷನ್ ವಸೂಲಿ","ಪ್ರಾರಂಭದಲ್ಲೂ ನಂತರವೂ ಶುಲ್ಕ ಇಲ್ಲ"],["18+","ವ್ಯಾಪ್ತಿಯ ಜಿಲ್ಲೆಗಳು","ಹಾಸನದಿಂದ ಬೀದರ್‌ವರೆಗೆ ಪ್ರಮುಖ ಜಿಲ್ಲೆಗಳು"],["ದಿನಕ್ಕೆ 1 ಬಾರಿ","ದರ ನವೀಕರಣ","ಎಪಿಎಂಸಿ ದರಗಳು ದಿನಕ್ಕೊಮ್ಮೆ ನವೀಕರಿಸುತ್ತವೆ"]]
+    : [["35L+","Karnataka Farmers","Potential users in Karnataka alone"],["₹0","Commission Charged","Zero fees — launch phase and beyond"],["18+","Districts Covered","From Hassan to Bidar, all major districts"],["Once daily","Rate Refresh","APMC mandi prices refresh once per day"]];
   const testimonials = lang === "kn"
     ? [
         {stars:"★★★★★",quote:"ಹಿಂದೆ ನಾನು ಬೆಳಗಿನ 4 ಗಂಟೆಗೆ ಮಂಡಿಗೆ ಹೋಗಿ ಏಜೆಂಟ್ ಹೇಳಿದ ದರವೇ ನಂಬಬೇಕಾಗುತ್ತಿತ್ತು. ಈಗ ಮನೆಯಿಂದಲೇ ಪೋಸ್ಟ್ ಮಾಡಿ ಒಂದೇ ಗಂಟೆಯಲ್ಲಿ 3–4 ಬಿಡ್‌ಗಳು ಬರುತ್ತವೆ. ನನ್ನ ಕೊನೆಯ ಟೊಮೆಟೊ ಬ್ಯಾಚ್‌ನಲ್ಲಿ ₹3,200 ಹೆಚ್ಚು ಸಂಪಾದಿಸಿದೆ.",name:"ರಾಜು ಹೆಗ್ಡೆ",role:"ರೈತ · ಹಾಸನ ಜಿಲ್ಲೆ",emoji:"🧑‍🌾",bg:"#e8f5eb"},
@@ -93,8 +93,8 @@ export default function HomePage({ setPage, lang }) {
       ];
   const footerDistricts = ["Hassan","Mysuru","Mandya","Shivamogga","Davangere","Hubli-Dharwad"];
   const footerTags = lang === "kn"
-    ? ["React 18","IndexedDB","BroadcastChannel","ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು","ಕಮಿಷನ್ ಇಲ್ಲ"]
-    : ["React 18","IndexedDB","BroadcastChannel","Live APMC Rates","No Commission"];
+    ? ["React 18","IndexedDB","BroadcastChannel","ದೈನಂದಿನ ಎಪಿಎಂಸಿ ದರಗಳು","ಕಮಿಷನ್ ಇಲ್ಲ"]
+    : ["React 18","IndexedDB","BroadcastChannel","Daily APMC Rates","No Commission"];
 
   const CSS = `
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&family=Noto+Sans+Kannada:wght@400;500;600;700;800&display=swap');

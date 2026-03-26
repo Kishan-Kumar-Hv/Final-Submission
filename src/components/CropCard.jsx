@@ -1,6 +1,7 @@
 import { Badge } from "./UI.jsx";
 import { fmtP } from "../utils/helpers.js";
-import { CostBadge } from "./SmartPriceCalculator.jsx";
+import { CostBadge, FarmerProfitHint } from "./SmartPriceCalculator.jsx";
+import { findMatchingCrop } from "../data/constants.js";
 
 const HARVEST_TYPE_META = {
   regrows: {
@@ -20,7 +21,7 @@ const HARVEST_TYPE_META = {
 };
 
 export default function CropCard({ crop, rates, children, role }) {
-  const mkt=rates.find(r=>r.c.toLowerCase()===crop.cropName.toLowerCase());
+  const mkt=findMatchingCrop(crop.cropName, rates);
   const topBid=crop.bids?.length?Math.max(...crop.bids.map(b=>b.amount)):0;
   const harvestType = HARVEST_TYPE_META[crop.harvestType] || null;
   return(
@@ -52,6 +53,15 @@ export default function CropCard({ crop, rates, children, role }) {
             <span>{harvestType.label}</span>
           </div>
         )}
+
+        {crop.acceptedByName && (
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,alignSelf:"flex-start",background:"var(--gold-pale)",border:"1px solid rgba(200,132,34,.28)",borderRadius:999,padding:"5px 10px",fontSize:11,fontWeight:800,color:"#9a5523"}}>
+            <span>✅</span>
+            <span>Accepted by {crop.acceptedByName}</span>
+          </div>
+        )}
+
+        {role==="farmer" && <FarmerProfitHint crop={crop} marketRate={mkt} />}
 
         {/* Stats grid */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>

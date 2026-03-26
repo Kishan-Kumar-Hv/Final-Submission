@@ -26,6 +26,21 @@ import { KA_LOCS } from "./data/constants.js";
 const channel = new BroadcastChannel("rr-sync");
 const APP_TITLE = import.meta.env.VITE_APP_NAME || "Raitha Reach";
 const DEFAULT_LANG = import.meta.env.VITE_DEFAULT_LANG === "kn" ? "kn" : "en";
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
+
+function generatePickupOtp() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+async function sendSmsNotice(payload) {
+  try {
+    await fetch(`${API_BASE}/notify/sms`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (_) {}
+}
 
 function haversineKm(a, b) {
   const toRad = (deg) => (deg * Math.PI) / 180;
@@ -183,8 +198,20 @@ export default function App() {
         }
       }
       if (e.data.type === "JOB_CLAIMED") {
-        addNotification(pick(lang, `🚛 Delivery partner claimed your pickup for ${tCrop(e.data.cropName, lang)}`, `🚛 ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ನಿಮ್ಮ ಪಿಕಪ್ ಅನ್ನು ವಿತರಣಾ ಸಹಭಾಗಿ ಸ್ವೀಕರಿಸಿದ್ದಾರೆ`));
-        addActivity({ icon: "🚛", text: pick(lang, `Delivery partner heading to farm for ${tCrop(e.data.cropName, lang)}`, `ವಿತರಣಾ ಸಹಭಾಗಿ ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ಫಾರ್ಮ್ ಕಡೆ ಬರುತ್ತಿದ್ದಾರೆ`), ts: Date.now() });
+        addNotification(pick(
+          lang,
+          `🚛 ${e.data.driverName} is coming to collect ${tCrop(e.data.cropName, lang)}. Driver phone: ${e.data.driverPhone}`,
+          `🚛 ${e.data.driverName} ಅವರು ${tCrop(e.data.cropName, lang)} ತೆಗೆದುಕೊಳ್ಳಲು ಬರುತ್ತಿದ್ದಾರೆ. ಚಾಲಕರ ಫೋನ್: ${e.data.driverPhone}`
+        ));
+        addActivity({
+          icon: "🚛",
+          text: pick(
+            lang,
+            `${e.data.driverName} is on the way to the farm for ${tCrop(e.data.cropName, lang)} · Call ${e.data.driverPhone}`,
+            `${e.data.driverName} ಅವರು ${tCrop(e.data.cropName, lang)}ಗಾಗಿ ಫಾರ್ಮ್ ಕಡೆ ಬರುತ್ತಿದ್ದಾರೆ · ಕರೆ ಮಾಡಿ ${e.data.driverPhone}`
+          ),
+          ts: Date.now(),
+        });
       }
       if (e.data.type === "STATUS_UPDATE") {
         addNotification(pick(lang, `📦 ${tCrop(e.data.cropName, lang)}: ${tStatus(e.data.status, lang)}`, `📦 ${tCrop(e.data.cropName, lang)}: ${tStatus(e.data.status, lang)}`));
@@ -326,6 +353,12 @@ export default function App() {
       deliveryPayout: job?.deliveryPayout,
     });
 
+    await sendSmsNotice({
+      to: job?.farmerPhone,
+      event: "retailer_confirmed_order",
+      message: `Raitha Reach: Your ${job?.cropName} order is accepted by ${job?.retailerName}. Pickup order is confirmed.`,
+    });
+
     addActivity({ icon: "✅", text: pick(lang, `Retailer confirmed order for ${tCrop(job?.cropName, lang)}. Bid closed and delivery opened.`, `${tCrop(job?.cropName, lang)}ಗಾಗಿ ಖರೀದಿದಾರರು ಆದೇಶ ದೃಢೀಕರಿಸಿದ್ದಾರೆ. ಹರಾಜು ಮುಚ್ಚಿ ವಿತರಣೆ ತೆರೆದಿದೆ.`), ts: Date.now() });
   }
 
@@ -404,6 +437,12 @@ export default function App() {
       direct: true,
     });
 
+    await sendSmsNotice({
+      to: crop.farmerPhone,
+      event: "retailer_accepted_crop",
+      message: `Raitha Reach: ${retailer.name} accepted your ${crop.cropName}. Order is confirmed at ${fmtP(acceptedPrice)}/kg.`,
+    });
+
     addActivity({
       icon: "🛒",
       text: pick(
@@ -456,9 +495,22 @@ export default function App() {
 
   // Delivery claims a job
   async function onClaim(jobId, du) {
+    const existingJob = jobs.find(j => j.id === jobId);
+    const pickupOtp = existingJob?.pickupOtp || generatePickupOtp();
+    const pickupOtpIssuedAt = existingJob?.pickupOtpIssuedAt || Date.now();
+
     const updated = jobs.map(j =>
       j.id === jobId
-        ? { ...j, deliveryId: du.id, deliveryName: du.name, deliveryPhone: du.phone, status: "on-the-way" }
+        ? {
+            ...j,
+            deliveryId: du.id,
+            deliveryName: du.name,
+            deliveryPhone: du.phone,
+            status: "on-the-way",
+            pickupOtp,
+            pickupOtpIssuedAt,
+            pickupOtpVerifiedAt: null,
+          }
         : j
     );
     setJobs(updated);
@@ -471,7 +523,62 @@ export default function App() {
       type:       "JOB_CLAIMED",
       cropName:   job?.cropName,
       driverName: du.name,
+      driverPhone: du.phone,
     });
+
+    await sendSmsNotice({
+      to: job?.farmerPhone,
+      event: "delivery_partner_claimed",
+      message: `Raitha Reach: Delivery partner ${du.name} (${du.phone}) is coming to collect your ${job?.cropName}. Pickup OTP: ${pickupOtp}. Share it only after arrival.`,
+    });
+  }
+
+  async function onVerifyPickup(jobId, pickupOtp) {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) {
+      return { ok: false, error: pick(lang, "Pickup job not found.", "ಪಿಕಪ್ ಕಾರ್ಯ ಸಿಗಲಿಲ್ಲ.") };
+    }
+
+    if (String(job.pickupOtp || "") !== String(pickupOtp || "").trim()) {
+      return { ok: false, error: pick(lang, "Wrong farmer OTP. Please check and try again.", "ರೈತರ OTP ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.") };
+    }
+
+    const verifiedAt = Date.now();
+    const updated = jobs.map(j =>
+      j.id === jobId
+        ? { ...j, status: "picked-up", pickupOtpVerifiedAt: verifiedAt }
+        : j
+    );
+
+    setJobs(updated);
+    broadcastJobs(updated);
+
+    const verifiedJob = updated.find(j => j.id === jobId);
+    try { await dbPut("jobs", verifiedJob); } catch (_) {}
+
+    channel.postMessage({
+      type: "STATUS_UPDATE",
+      cropName: verifiedJob?.cropName,
+      status: "picked-up",
+    });
+
+    await sendSmsNotice({
+      to: verifiedJob?.farmerPhone,
+      event: "pickup_proof_verified",
+      message: `Raitha Reach: Pickup OTP verified for ${verifiedJob?.cropName}. ${verifiedJob?.deliveryName} has collected the order.`,
+    });
+
+    addActivity({
+      icon: "🔐",
+      text: pick(
+        lang,
+        `${tCrop(verifiedJob?.cropName, lang)} pickup proof verified. Order marked as picked up.`,
+        `${tCrop(verifiedJob?.cropName, lang)} ಪಿಕಪ್ ದೃಢೀಕರಣ ಮುಗಿದಿದೆ. ಆದೇಶವನ್ನು ತೆಗೆದುಕೊಂಡಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ.`
+      ),
+      ts: verifiedAt,
+    });
+
+    return { ok: true };
   }
 
   async function onReleaseDeliveryRoute(jobId) {
@@ -553,6 +660,7 @@ export default function App() {
         <DeliveryDashboard
           {...shared}
           onClaim={onClaim}
+          onVerifyPickup={onVerifyPickup}
           onReleaseRoute={onReleaseDeliveryRoute}
           onUpdateStatus={onUpdateStatus}
           onDeleteJob={onDeleteJob}

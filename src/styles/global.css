@@ -2,14 +2,14 @@
 
 :root {
   /* Brand */
-  --green:      #2d7a3a;
-  --green-l:    #38a047;
-  --green-pale: #e8f5eb;
-  --green-mid:  #c8e6cc;
-  --green-xp:   #f4faf5;
+  --green:      #667a2f;
+  --green-l:    #7f953a;
+  --green-pale: #eef3d9;
+  --green-mid:  #dce5b5;
+  --green-xp:   #faf7eb;
 
-  --gold:       #e8920a;
-  --gold-pale:  #fff4e0;
+  --gold:       #c88422;
+  --gold-pale:  #fff2dc;
 
   --red:        #d93025;
   --red-pale:   #fdecea;
@@ -19,15 +19,15 @@
 
   /* Neutrals */
   --white:      #ffffff;
-  --bg:         #f7f9f7;
-  --bg2:        #eef2ee;
-  --border:     #dde8de;
-  --border2:    #c4d9c6;
+  --bg:         #fbfaf5;
+  --bg2:        #f2eedf;
+  --border:     #e7deca;
+  --border2:    #d4c7aa;
 
-  --text:       #1a2e1c;
-  --text2:      #3d5c40;
-  --text3:      #6b8f6e;
-  --text4:      #9ab89d;
+  --text:       #2f271a;
+  --text2:      #5d4d34;
+  --text3:      #837154;
+  --text4:      #b7a27f;
 
   --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
   --shadow:     0 2px 12px rgba(0,0,0,.09);

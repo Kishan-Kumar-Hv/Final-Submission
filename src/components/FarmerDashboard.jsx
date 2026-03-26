@@ -5,6 +5,7 @@ import BidWars from "./BidWars.jsx";
 import JobCard from "./JobCard.jsx";
 import PostCropForm from "./PostCropForm.jsx";
 import MarketRates from "./MarketRates.jsx";
+import { getEstimatedFarmerCostPerKg } from "./SmartPriceCalculator.jsx";
 import { StatCard, SectionTitle, Empty, Card } from "./UI.jsx";
 import { useWeather } from "../hooks/useWeather.js";
 import { AGR_NEWS, HELPLINES } from "../data/constants.js";
@@ -18,6 +19,20 @@ export default function FarmerDashboard({ user, crops, jobs, rates, onPost, onAc
   const biddingCrops = mine.filter(c => c.bids?.length > 0 && c.status !== "booked" && c.status !== "delivered");
   const totalBids = mine.reduce((s, c) => s + (c.bids?.length || 0), 0);
   const revenue   = myJobs.reduce((s, j) => s + j.winningBid * j.quantity, 0);
+  const impact = myJobs.reduce((summary, job) => {
+    const crop = crops.find(c => c.id === job.cropId);
+    const floorPrice = Number(crop?.minBid || 0);
+    const costPerKg = getEstimatedFarmerCostPerKg(crop);
+    const exactProfit = costPerKg > 0 ? Math.max((job.winningBid - costPerKg) * job.quantity, 0) : 0;
+    const aboveFloor = floorPrice > 0 ? Math.max((job.winningBid - floorPrice) * job.quantity, 0) : 0;
+
+    summary.farmerGain += exactProfit > 0 ? exactProfit : aboveFloor;
+    summary.transportSaved += Number(job.fuelAllowance || 0);
+    summary.deliveryPayout += Number(job.deliveryPayout || 0);
+    summary.delivered += job.status === "delivered" ? 1 : 0;
+    return summary;
+  }, { farmerGain: 0, transportSaved: 0, deliveryPayout: 0, delivered: 0 });
+  const approxProfitPerOrder = myJobs.length ? impact.farmerGain / myJobs.length : 0;
   const wx = useWeather(user.district);
   const newsItems = AGR_NEWS.map(n => tNews(n, lang));
   const helplines = HELPLINES.map(h => tHelpline(h, lang));
@@ -78,6 +93,23 @@ export default function FarmerDashboard({ user, crops, jobs, rates, onPost, onAc
               <StatCard icon="📦" label={pick(lang, "Pickup Jobs", "ಪಿಕಪ್ ಕಾರ್ಯಗಳು")} value={myJobs.length} color="var(--blue)" />
               <StatCard icon="💰" label={pick(lang, "Total Revenue", "ಒಟ್ಟು ಆದಾಯ")} value={revenue > 0 ? fmtP(revenue) : "₹0"} color="var(--green)" />
             </div>
+
+            <SectionTitle>📈 {pick(lang, "Impact Snapshot", "ಪ್ರಭಾವದ ಸಂಕ್ಷಿಪ್ತ ಚಿತ್ರ")}</SectionTitle>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
+              <StatCard icon="💵" label={pick(lang, "Approx Profit", "ಅಂದಾಜು ಲಾಭ")} value={impact.farmerGain > 0 ? fmtP(impact.farmerGain) : "₹0"} sub={pick(lang, approxProfitPerOrder > 0 ? `${fmtP(approxProfitPerOrder)} per order` : "based on accepted orders", approxProfitPerOrder > 0 ? `ಪ್ರತಿ ಆದೇಶಕ್ಕೆ ${fmtP(approxProfitPerOrder)}` : "ಸ್ವೀಕರಿಸಿದ ಆದೇಶಗಳ ಆಧಾರದಲ್ಲಿ")} color="var(--gold)" />
+              <StatCard icon="⛽" label={pick(lang, "Transport Saved", "ಉಳಿಸಿದ ಸಾರಿಗೆ")} value={impact.transportSaved > 0 ? fmtP(impact.transportSaved) : "₹0"} color="var(--green)" />
+              <StatCard icon="🚛" label={pick(lang, "Delivery Enabled", "ಸಕ್ರಿಯಗೊಂಡ ವಿತರಣೆ")} value={impact.deliveryPayout > 0 ? fmtP(impact.deliveryPayout) : "₹0"} color="var(--blue)" />
+              <StatCard icon="✅" label={pick(lang, "Delivered Orders", "ಪೂರ್ಣಗೊಂಡ ಆದೇಶಗಳು")} value={impact.delivered} color="var(--green)" />
+            </div>
+            <Card style={{ padding: "14px 16px", marginBottom: 20, background: "#fffdf7", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.7 }}>
+                {pick(
+                  lang,
+                  "This summary shows the direct value created for farmers: approximate profit, transport cost avoided, delivery payout opened for partners, and orders completed. For auto-priced crops it uses estimated production cost, and for manual crops it measures value above your floor price, so the profit number stays approximate and easy to understand.",
+                  "ಈ ಸಂಕ್ಷಿಪ್ತ ಚಿತ್ರ ರೈತರಿಗೆ ಸೃಷ್ಟಿಯಾದ ನೇರ ಮೌಲ್ಯವನ್ನು ತೋರಿಸುತ್ತದೆ: ಅಂದಾಜು ಲಾಭ, ಉಳಿಸಿದ ಸಾರಿಗೆ ವೆಚ್ಚ, ವಿತರಣಾ ಸಹಭಾಗಿಗಳಿಗೆ ತೆರೆಯಲಾದ ಪಾವತಿ, ಮತ್ತು ಪೂರ್ಣಗೊಂಡ ಆದೇಶಗಳು. ಸ್ವಯಂ ದರದ ಬೆಳೆಗಳಿಗೆ ಅಂದಾಜು ಉತ್ಪಾದನಾ ವೆಚ್ಚವನ್ನು ಮತ್ತು ಕೈಯಾರೆ ದರದ ಬೆಳೆಗಳಿಗೆ ನಿಮ್ಮ ಕನಿಷ್ಠ ದರಕ್ಕಿಂತ ಮೇಲಿನ ಮೌಲ್ಯವನ್ನು ಬಳಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಲಾಭದ ಸಂಖ್ಯೆ ಅಂದಾಜಿನದ್ದಾಗಿದ್ದು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ಸುಲಭವಾಗಿದೆ."
+                )}
+              </div>
+            </Card>
 
             {/* Active auctions */}
             <SectionTitle>🔥 {pick(lang, "Active Auctions — Accept or Hold", "ಸಕ್ರಿಯ ಹರಾಜುಗಳು — ಸ್ವೀಕರಿಸಿ ಅಥವಾ ಕಾಯಿರಿ")}</SectionTitle>
@@ -161,7 +193,7 @@ export default function FarmerDashboard({ user, crops, jobs, rates, onPost, onAc
             {myJobs.length === 0
               ? <Empty icon="📦" title={pick(lang, "No pickup jobs yet", "ಇನ್ನೂ ಪಿಕಪ್ ಕಾರ್ಯಗಳಿಲ್ಲ")} sub={pick(lang, "A retailer acceptance will create your first pickup job", "ಖರೀದಿದಾರರ ಸ್ವೀಕೃತಿಯ ನಂತರ ನಿಮ್ಮ ಮೊದಲ ಪಿಕಪ್ ಕಾರ್ಯ ಸೃಷ್ಟಿಯಾಗುತ್ತದೆ")} />
               : myJobs.map(j => (
-                  <JobCard key={j.id} job={j} lang={lang}>
+                  <JobCard key={j.id} job={j} lang={lang} role="farmer">
                     {/* Cancel job — only if delivery not yet claimed */}
                     {!j.deliveryId && (
                       <button onClick={() => { if (window.confirm(pick(lang, "Cancel this job? The crop will go back to Open status.", "ಈ ಕಾರ್ಯವನ್ನು ರದ್ದುಮಾಡಬೇಕೆ? ಬೆಳೆ ಮತ್ತೆ ತೆರೆದ ಸ್ಥಿತಿಗೆ ಹೋಗುತ್ತದೆ."))) onDeleteJob(j.id); }}

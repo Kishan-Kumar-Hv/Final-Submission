@@ -10,8 +10,8 @@ export default function MarketRates({rates,lang}){
   return(
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
-        <div style={{fontWeight:800,fontSize:20,color:"var(--text)"}}>📊 {pick(lang,"Live APMC Market Rates","ಲೈವ್ ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆ ದರಗಳು")}</div>
-        <div style={{display:"flex",alignItems:"center",gap:6,background:"var(--green-pale)",padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,color:"var(--green)"}}><LiveDot/>{pick(lang,"Updates every ~4s","ಪ್ರತಿ ~4 ಸೆಕೆಂಡಿಗೆ ನವೀಕರಣ")}</div>
+        <div style={{fontWeight:800,fontSize:20,color:"var(--text)"}}>📊 {pick(lang,"Today's APMC Market Rates","ಇಂದಿನ ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆ ದರಗಳು")}</div>
+        <div style={{display:"flex",alignItems:"center",gap:6,background:"var(--green-pale)",padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,color:"var(--green)"}}><LiveDot/>{pick(lang,"Refreshes once daily","ದಿನಕ್ಕೆ ಒಮ್ಮೆ ನವೀಕರಿಸುತ್ತದೆ")}</div>
       </div>
       <div style={{background:"var(--green-xp)",border:"1px solid var(--green-mid)",borderRadius:12,padding:"10px 14px",marginBottom:16,fontSize:12,color:"var(--text2)"}}>
         📍 {pick(lang,"Aggregated from Karnataka State APMC — Mysuru · Hubli · Hassan · Davangere · Belgaum mandis","ಕರ್ನಾಟಕ ರಾಜ್ಯ ಎಪಿಎಂಸಿ ಮೂಲಗಳಿಂದ ಸಂಗ್ರಹಿತ — ಮೈಸೂರು · ಹುಬ್ಬಳ್ಳಿ · ಹಾಸನ · ದಾವಣಗೆರೆ · ಬೆಳಗಾವಿ ಮಂಡಿಗಳು")}

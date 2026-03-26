@@ -6,8 +6,9 @@ import { S_ICON, NEXT_S } from "../data/constants.js";
 import { fmtP } from "../utils/helpers.js";
 import { pick, tCrop, tLocation, tStatus } from "../i18n.js";
 
-export default function DeliveryDashboard({ user, jobs, onClaim, onReleaseRoute, onUpdateStatus, onDeleteJob, toast, addActivity, lang }) {
+export default function DeliveryDashboard({ user, jobs, onClaim, onVerifyPickup, onReleaseRoute, onUpdateStatus, onDeleteJob, toast, addActivity, lang }) {
   const [view, setView] = useState("available");
+  const [pickupOtpInputs, setPickupOtpInputs] = useState({});
 
   const available = jobs.filter(j => !j.deliveryId && (j.status === "confirmed" || j.status === "scheduled"));
   const myJobs    = jobs.filter(j => j.deliveryId === user.id);
@@ -57,7 +58,7 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onReleaseRoute,
             {available.length === 0
               ? <Empty icon="🛣️" title={pick(lang, "No jobs right now", "ಈಗ ಯಾವುದೇ ಕಾರ್ಯಗಳಿಲ್ಲ")} sub={pick(lang, "Check back soon — new jobs appear when retailers accept crop listings", "ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ — ಖರೀದಿದಾರರು ಬೆಳೆ ಲಿಸ್ಟಿಂಗ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸಿದಾಗ ಹೊಸ ಕಾರ್ಯಗಳು ಕಾಣಿಸುತ್ತವೆ")} />
               : available.map(j => (
-                <JobCard key={j.id} job={j} lang={lang}>
+                <JobCard key={j.id} job={j} lang={lang} role="delivery">
                   <Btn variant="primary" size="md" onClick={() => {
                     onClaim(j.id, user);
                     setView("active");
@@ -81,9 +82,38 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onReleaseRoute,
               ? <Empty icon="🚛" title={pick(lang, "No active routes", "ಯಾವುದೇ ಸಕ್ರಿಯ ಮಾರ್ಗಗಳಿಲ್ಲ")} sub={pick(lang, "Claim an available job to get started", "ಪ್ರಾರಂಭಿಸಲು ಲಭ್ಯ ಕಾರ್ಯವನ್ನು ಸ್ವೀಕರಿಸಿ")} />
               : active.map(j => {
                   const nxt = NEXT_S[j.status];
+                  const needsPickupProof = j.status === "on-the-way" && !j.pickupOtpVerifiedAt;
                   return (
-                    <JobCard key={j.id} job={j} lang={lang}>
-                      {nxt && (
+                    <JobCard key={j.id} job={j} lang={lang} role="delivery">
+                      {needsPickupProof && (
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, flexWrap: "wrap" }}>
+                          <div style={{ minWidth: 180 }}>
+                            <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text2)", display: "block", marginBottom: 4, textTransform: "uppercase" }}>
+                              {pick(lang, "Farmer OTP", "ರೈತರ OTP")}
+                            </label>
+                            <input
+                              value={pickupOtpInputs[j.id] || ""}
+                              onChange={(e) => setPickupOtpInputs((prev) => ({ ...prev, [j.id]: e.target.value }))}
+                              placeholder={pick(lang, "Enter 4-digit OTP", "4 ಅಂಕೆಯ OTP ನಮೂದಿಸಿ")}
+                              style={{ padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, fontSize: 14, fontFamily: "inherit", color: "var(--text)", background: "#fff", outline: "none", width: "100%" }}
+                            />
+                          </div>
+                          <Btn variant="secondary" size="md" onClick={async () => {
+                            const result = await onVerifyPickup(j.id, pickupOtpInputs[j.id]);
+                            if (!result?.ok) {
+                              toast({ msg: result?.error || pick(lang, "Could not verify pickup OTP", "ಪಿಕಪ್ OTP ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ"), icon: "⚠️", type: "error" });
+                              return;
+                            }
+
+                            setPickupOtpInputs((prev) => ({ ...prev, [j.id]: "" }));
+                            toast({ msg: pick(lang, `🔐 Pickup OTP verified for ${tCrop(j.cropName, lang)}.`, `🔐 ${tCrop(j.cropName, lang)}ಗಾಗಿ ಪಿಕಪ್ OTP ದೃಢೀಕರಿಸಲಾಗಿದೆ.`), icon: "🔐" });
+                            addActivity({ icon: "🔐", text: pick(lang, `Farmer OTP verified for ${tCrop(j.cropName, lang)}. Crop marked picked up.`, `${tCrop(j.cropName, lang)}ಗಾಗಿ ರೈತರ OTP ದೃಢೀಕರಿಸಲಾಗಿದೆ. ಬೆಳೆಯನ್ನು ತೆಗೆದುಕೊಂಡಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ.`), ts: Date.now() });
+                          }}>
+                            🔐 {pick(lang, "Verify Pickup OTP", "ಪಿಕಪ್ OTP ದೃಢೀಕರಿಸಿ")}
+                          </Btn>
+                        </div>
+                      )}
+                      {!needsPickupProof && nxt && (
                         <Btn variant="gold" size="md" onClick={() => {
                           onUpdateStatus(j.id, nxt);
                           toast({ msg: pick(lang, `📲 Status updated: ${tStatus(nxt, lang)}`, `📲 ಸ್ಥಿತಿ ನವೀಕರಿಸಲಾಗಿದೆ: ${tStatus(nxt, lang)}`), icon: S_ICON[nxt], type: nxt === "delivered" ? "gold" : "" });
@@ -134,7 +164,7 @@ export default function DeliveryDashboard({ user, jobs, onClaim, onReleaseRoute,
                       </div>
                     </div>
                   </div>
-                  {done.map(j => <JobCard key={j.id} job={j} lang={lang} />)}
+                  {done.map(j => <JobCard key={j.id} job={j} lang={lang} role="delivery" />)}
                 </>
               )
             }
